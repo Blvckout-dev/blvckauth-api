@@ -1,0 +1,15 @@
+@my_masternode_auth_HostAddress = https://localhost:7001
+
+GET {{my_masternode_auth_HostAddress}}/swagger/
+Accept: application/json
+
+###
+
+POST {{my_masternode_auth_HostAddress}}/auth
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "damin"    
+}
