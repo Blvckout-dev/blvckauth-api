@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-masternode-auth
+spec:
+  selector:
+    matchLabels:
+      app: my-masternode-auth
+  template:
+    metadata:
+      labels:
+        app: my-masternode-auth
+    spec:
+      containers:
+      - name: my-masternode-auth
+        image: maximilian0712/my-masternode-auth:latest
+        env:
+          - name: "Database__ConnectionString"
+            valueFrom:
+              secretKeyRef:
+                name: my-masternode-auth
+                key: DatabaseConnectionString
+          - name: JwtSettings__Key
+            valueFrom:
+              secretKeyRef:
+                name: my-masternode-auth
+                key: JwtKey
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
