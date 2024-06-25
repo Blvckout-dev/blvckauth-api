@@ -111,6 +111,14 @@ class Program
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
+            // Init database
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<MyMasternodeAuthDbContext>();
+                DbInitializer.Initialize(context);
+            }
+
             app.UseSwagger();
             app.UseSwaggerUI();
         }
