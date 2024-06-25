@@ -12,12 +12,8 @@ public class JwtTokenService : Interfaces.IJwtTokenService
     private readonly ILogger<JwtTokenService> _logger;
     private JwtSettings _jwtSettings;
 
-    // Temp. replacement for db users
-    private readonly List<Models.User> _users =
-    [
-        new("1", "admin", "damin", "Administrator" /*, new[] { "shoes.read" } */ ),
-        new("2", "user01", "suer", "User" /*, new[] { "shoes.read" } */ )
-    ];
+    private const string ROLE = "role";
+    private const string SCOPE = "scope";
 
     public JwtTokenService(ILogger<JwtTokenService> logger, IOptionsMonitor<JwtSettings> jwtSettings)
     {
@@ -29,29 +25,33 @@ public class JwtTokenService : Interfaces.IJwtTokenService
         });
     }
 
-    public Models.AuthenticationToken? GenerateToken(Models.Login login)
+    public Models.AuthenticationToken GenerateToken(string? username, string? role, IEnumerable<string?>? scopes = null)
     {
-        if (string.IsNullOrWhiteSpace(_jwtSettings.Key))
-            return null; // ToDo:Log missing key and return null;
-
-        Models.User? user = _users.FirstOrDefault(u => u.Username == login.Username && u.Password == login.Password);
+        if (
+            string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(role)
+        )
+            return new Models.AuthenticationToken(false, null, "Invalid input parameters for token generation.");
         
-        if (user == null)
-            return null;
-
-        SymmetricSecurityKey secretKey = new(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+        // In Program.IsConfigurationValid(), we ensure JwtSettings:Key is valid
+        SymmetricSecurityKey secretKey = new(Encoding.UTF8.GetBytes(_jwtSettings.Key!));
         SigningCredentials signingCredentials = new(secretKey, SecurityAlgorithms.HmacSha256);
         DateTime expirationTimeStamp = DateTime.Now.AddMinutes(20);
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Name, user.Username),
-            new("role", user.Role)/*,
-            new Claim("scope", string.Join(" ", user.Scopes)) */
+            new(JwtRegisteredClaimNames.Name, username),
+            new(ROLE, role)
         };
 
+        if (scopes is not null)
+            foreach (string? scope in scopes)
+                if (!string.IsNullOrWhiteSpace(scope))
+                    claims.Add(new Claim(SCOPE, scope));
+
         var tokenOptions = new JwtSecurityToken(
-            issuer: "https://localhost:5002",
+            issuer: "my-masternode-auth",
+            audience: "my-masternode",
             claims: claims,
             expires: expirationTimeStamp,
             signingCredentials: signingCredentials
@@ -59,6 +59,6 @@ public class JwtTokenService : Interfaces.IJwtTokenService
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 
-        return new Models.AuthenticationToken(tokenString);
+        return new Models.AuthenticationToken(true, tokenString, null);
     }
 }
