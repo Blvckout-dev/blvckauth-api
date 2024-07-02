@@ -33,6 +33,11 @@ public class MyMasternodeAuthDbContext(DbContextOptions<MyMasternodeAuthDbContex
                   .WithOne(u => u.Role);
         });
 
+        // Seed default user role
+        modelBuilder.Entity<Models.Role>().HasData(
+            new Models.Role { Id = 1, Name = "User" }
+        );
+
         modelBuilder.Entity<Models.Scope>().ToTable("scopes");
         modelBuilder.Entity<Models.Scope>(entity => 
         {
@@ -57,7 +62,8 @@ public class MyMasternodeAuthDbContext(DbContextOptions<MyMasternodeAuthDbContex
 
             entity.Property(e => e.Password).IsRequired();
             
-            entity.Property(e => e.RoleId).HasDefaultValue(1);
+            entity.Property(e => e.RoleId).IsRequired().HasDefaultValue(1);
+
             entity.HasOne(u => u.Role)
                   .WithMany(r => r.Users)
                   .HasForeignKey(u => u.RoleId);

@@ -15,10 +15,6 @@ public static class DbInitializer
         context.Roles.AddRange(
             [
                 new () {
-                    Id = 1,
-                    Name = "User"
-                },
-                new () {
                     Id = 2,
                     Name = "Administrator"
                 }
