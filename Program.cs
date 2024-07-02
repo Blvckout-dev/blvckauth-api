@@ -27,6 +27,9 @@ class Program
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
         builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true); 
 
+        // Register AutoMapper
+        builder.Services.AddAutoMapper(typeof(Program));
+
         builder.Services.AddControllers()
             .AddNewtonsoftJson();
 
@@ -98,7 +101,14 @@ class Program
             options => {
                 options.UseMySql(
                     databaseSettings?.ConnectionString,
-                    ServerVersion.AutoDetect(databaseSettings?.ConnectionString)
+                    ServerVersion.AutoDetect(databaseSettings?.ConnectionString),
+                    mysqlOptions => {
+                        mysqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null
+                        );
+                    }
                 );
                 options.EnableDetailedErrors();
                 options.EnableSensitiveDataLogging();
