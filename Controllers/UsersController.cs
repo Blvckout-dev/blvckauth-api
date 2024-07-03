@@ -4,15 +4,18 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Bl4ckout.MyMasternode.DataModels.Auth.V1.DTOs.Users;
+using AutoMapper;
 
 namespace Bl4ckout.MyMasternode.Auth.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UsersController(ILogger<UsersController> logger, Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext) : ControllerBase
+public class UsersController(ILogger<UsersController> logger, Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext, IMapper mapper) : ControllerBase
 {
     private readonly ILogger<UsersController> _logger = logger;
     private readonly Database.MyMasternodeAuthDbContext _myMasternodeAuthDbContext = myMasternodeAuthDbContext;
+    private readonly IMapper _mapper = mapper;
 
     [HttpGet]
     [Authorize(Policy = "UserRead")]
@@ -25,12 +28,13 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
             .Include(users => users.Scopes)
             .ToListAsync();
 
-        var dtoUsers = dbUsers.Select(u => new DataModels.DTOs.Auth.V1.Users.UserDto
+        // Mapping dbUsers to a list of UserDtos
+        var dtoUsers = dbUsers.Select(dbUser => new UserDto
         {
-            Id = u.Id,
-            Username = u.Username,
-            Role = u.Role?.Name,
-            Scopes = u.Scopes?.Select(s => s.Name)
+            Id = dbUser.Id,
+            Username = dbUser.Username,
+            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null"),
+            Scopes = dbUser.Scopes?.Select(s => s.Name)
         });
 
         return Ok(dtoUsers);
@@ -51,11 +55,11 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
         if (dbUser is null)
             return NotFound();
 
-        var dtoUser = new DataModels.DTOs.Auth.V1.Users.UserDto
+        var dtoUser = new UserDto
         {
             Id = dbUser.Id,
             Username = dbUser.Username,
-            Role = dbUser.Role?.Name,
+            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null"),
             Scopes = dbUser.Scopes?.Select(s => s.Name)
         };
 
@@ -67,7 +71,7 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Create([FromBody] DataModels.DTOs.Auth.V1.Users.UserCreateDto userCreateDto)
+    public async Task<IActionResult> Create([FromBody] UserCreateDto userCreateDto)
     {
         Dictionary<string, string> errors = [];
 
@@ -85,7 +89,11 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
             return BadRequest(errors);
 
         // Check if username already exists
-        if (await _myMasternodeAuthDbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == userCreateDto.Username) is not null)
+        if (
+            await _myMasternodeAuthDbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Username == userCreateDto.Username) is not null
+        )
             return Conflict($"{nameof(userCreateDto.Username)} already exists");
 
         Database.Models.User user = new () {
@@ -100,7 +108,7 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
                 new PasswordHasherOptions()
                 {
                     CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3, // V3 uses PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
-                    IterationCount = 600000 // Increasing to 600k iterations, recommended by OWASP
+                    IterationCount = 600_000 // Increasing to 600k iterations, recommended by OWASP
                 }
             )
         ).HashPassword(user, userCreateDto.Password);
@@ -118,30 +126,28 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [Authorize(Policy = "UserUpdate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Update(int id, [FromBody] JsonPatchDocument<DataModels.DTOs.Auth.V1.Users.UserUpdateDto> userUpdateDto)
+    public async Task<IActionResult> Update(int id, [FromBody] JsonPatchDocument<UserUpdateDto> userUpdateDto)
     {
         if (userUpdateDto is null)
             return BadRequest();
         
+        // Check if user exists in db
         var dbUser = await _myMasternodeAuthDbContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (dbUser is null)
             return NotFound();
 
-        var userToPatch = new DataModels.DTOs.Auth.V1.Users.UserUpdateDto() {
-            Username = dbUser.Username,
-            Password = dbUser.Password,
-            RoleId = dbUser.RoleId
-        };
-
+        var userToPatch = _mapper.Map<UserUpdateDto>(dbUser);
+        
+        // Apply the patch document to userToPatch
         userUpdateDto.ApplyTo(userToPatch, ModelState);
 
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        if (!TryValidateModel(userToPatch))
+            return ValidationProblem(ModelState);
+
+        // Map the userToPatch back to the dbUser entity
+        _mapper.Map(userToPatch, dbUser);
 
         await _myMasternodeAuthDbContext.SaveChangesAsync();
 
@@ -152,7 +158,6 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [Authorize(Policy = "UserUpdate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> AddScopeToUser(int id, [FromBody] ICollection<string> scopes)
     {
         // Check if request contains any scopes at all
@@ -234,7 +239,11 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
         foreach (var requestedScope in requestedDbScopes)
         {
             // Remove scope from UsersScopes join table
-            var dbUserScope = await _myMasternodeAuthDbContext.UsersScopes.FirstOrDefaultAsync(us => us.UserId == dbUser.Id && us.ScopeId == requestedScope.Id);
+            var dbUserScope = await _myMasternodeAuthDbContext.UsersScopes
+                .FirstOrDefaultAsync(us => 
+                    us.UserId == dbUser.Id &&
+                    us.ScopeId == requestedScope.Id
+                );
             
             if (dbUserScope is null) {
                 // Log
