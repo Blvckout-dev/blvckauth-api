@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 namespace Bl4ckout.MyMasternode.Auth.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class UsersController(
     ILogger<UsersController> logger,
     Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext,
