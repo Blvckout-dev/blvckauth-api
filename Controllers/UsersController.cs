@@ -4,14 +4,20 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Bl4ckout.MyMasternode.Auth.Utilities;
 using Bl4ckout.MyMasternode.DataModels.Auth.V1.DTOs.Users;
 using AutoMapper;
+using Newtonsoft.Json;
 
 namespace Bl4ckout.MyMasternode.Auth.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UsersController(ILogger<UsersController> logger, Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext, IMapper mapper) : ControllerBase
+public class UsersController(
+    ILogger<UsersController> logger,
+    Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext,
+    IMapper mapper
+) : ControllerBase
 {
     private readonly ILogger<UsersController> _logger = logger;
     private readonly Database.MyMasternodeAuthDbContext _myMasternodeAuthDbContext = myMasternodeAuthDbContext;
@@ -22,71 +28,111 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> List()
     {
+        _logger.LogInformation("{methodName} method called.", nameof(List));
+
+        // Get all users with their role and scopes from the database
         var dbUsers = await _myMasternodeAuthDbContext.Users
             .AsNoTracking()
             .Include(users => users.Role)
             .Include(users => users.Scopes)
             .ToListAsync();
 
-        // Mapping dbUsers to a list of UserDtos
+        _logger.LogDebug("Successfully retrieved {dbUsersCount} users.", dbUsers.Count);
+        _logger.LogDebugWithObject("Database users:\n{dbUserList}", dbUsers);
+
+        // Mapping database users to a list of user dtos
         var dtoUsers = dbUsers.Select(dbUser => new UserDto
         {
             Id = dbUser.Id,
             Username = dbUser.Username,
-            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null"),
+            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null."),
             Scopes = dbUser.Scopes?.Select(s => s.Name)
         });
+        
+        _logger.LogDebugWithObject("Mapped users:\n{dtoUserList}", dtoUsers);
+
+        _logger.LogInformation("Successfully received all users from database");
 
         return Ok(dtoUsers);
     }
 
-    [HttpGet("{username}")]
+    [HttpGet("{id}")]
     [Authorize(Policy = "UserRead")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Details(string username)
+    public async Task<IActionResult> Details(int id)
     {
+        _logger.LogInformation("{methodName} method called.", nameof(Details));
+
+        _logger.LogDebug("Trying to receive user with id: {id}.", id);
         var dbUser = await _myMasternodeAuthDbContext.Users
             .AsNoTracking()
             .Include(users => users.Role)
             .Include(users => users.Scopes)
-            .FirstOrDefaultAsync(u => u.Username == username);
+            .FirstOrDefaultAsync(u => u.Id == id);
+        
+        _logger.LogDebugWithObject("Database User:\n{dbUser}", dbUser);
 
         if (dbUser is null)
-            return NotFound();
+        {
+            _logger.LogWarning("Failed to find user with id: {id}.", id);
+            return NotFound($"Failed to find a user with id: {id}.");
+        }
 
+        _logger.LogDebug("Successfully received user from database");
+
+        // Mapping database user to user dto
         var dtoUser = new UserDto
         {
             Id = dbUser.Id,
             Username = dbUser.Username,
-            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null"),
+            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null."),
             Scopes = dbUser.Scopes?.Select(s => s.Name)
         };
+
+        _logger.LogDebugWithObject("Mapped user:\n{dtoUser}", dtoUser);
+
+        _logger.LogInformation("Successfully received user with id: {id}.", dbUser.Id);
 
         return Ok(dtoUser);
     }
 
     [HttpPost]
     [Authorize(Policy = "UserCreate")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create([FromBody] UserCreateDto userCreateDto)
     {
+        _logger.LogInformation("{methodName} method called.", nameof(Create));
+
         Dictionary<string, string> errors = [];
 
         // Check if provided userCreateDto is valid
+
         if (string.IsNullOrWhiteSpace(userCreateDto.Username))
-            errors.Add(nameof(userCreateDto.Username), $"{nameof(userCreateDto.Username)} cannot be empty");
+            errors.Add(nameof(userCreateDto.Username), $"{nameof(userCreateDto.Username)} cannot be empty.");
         
         if (string.IsNullOrWhiteSpace(userCreateDto.Password))
-            errors.Add(nameof(userCreateDto.Password), $"{nameof(userCreateDto.Password)} cannot be empty");
+            errors.Add(nameof(userCreateDto.Password), $"{nameof(userCreateDto.Password)} cannot be empty.");
         
-        if (userCreateDto.RoleId is not null && _myMasternodeAuthDbContext.Roles.AsNoTracking().FirstOrDefault(r => r.Id == userCreateDto.RoleId) is null)            
-            errors.Add(nameof(userCreateDto.RoleId), $"{nameof(userCreateDto.RoleId)} does not exist");
+        if (
+            userCreateDto.RoleId is not null &&
+            _myMasternodeAuthDbContext.Roles
+                .AsNoTracking()
+                .FirstOrDefault(r => r.Id == userCreateDto.RoleId) is null
+        )            
+            errors.Add(nameof(userCreateDto.RoleId), $"{nameof(userCreateDto.RoleId)} does not exist.");
+
+        _logger.LogDebugWithObject("User create dto:\n{userCreateDto}", userCreateDto);
 
         if (errors.Count > 0)
+        {
+            _logger.LogWarning("{errors}", errors); // ToDo: Testing required
             return BadRequest(errors);
+        }
+
+        _logger.LogDebug("Successfully validated userCreateDto.");
 
         // Check if username already exists
         if (
@@ -94,8 +140,12 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == userCreateDto.Username) is not null
         )
-            return Conflict($"{nameof(userCreateDto.Username)} already exists");
+        {
+            _logger.LogWarning("Username: {username} already exists.", userCreateDto.Username);
+            return Conflict($"{nameof(userCreateDto.Username)} already exists.");
+        }
 
+        // Building new user to insert into the database
         Database.Models.User user = new () {
             Username = userCreateDto.Username
         };
@@ -107,51 +157,71 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
             Options.Create(
                 new PasswordHasherOptions()
                 {
-                    CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3, // V3 uses PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
-                    IterationCount = 600_000 // Increasing to 600k iterations, recommended by OWASP
+                    // V3 uses PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
+                    CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3,
+                    // Increasing to 600k iterations, recommended by OWASP
+                    IterationCount = 600_000
                 }
             )
         ).HashPassword(user, userCreateDto.Password);
 
         user.Password = passwordHash;
 
-        // Save new user
-        await _myMasternodeAuthDbContext.Users.AddAsync(user);
-        await _myMasternodeAuthDbContext.SaveChangesAsync();
+        _logger.LogDebugWithObject("New database user:\n{dbUser}", user);
 
-        return Ok();
+       // Saving new user to database
+        await _myMasternodeAuthDbContext.Users.AddAsync(user);
+        if (await _myMasternodeAuthDbContext.SaveChangesAsync() == 0)
+        {
+            _logger.LogWarning("Failed to save user to database:\n{dbUser}", JsonConvert.SerializeObject(user));
+            return Problem("Internal server error while processing your request.");
+        }
+
+        _logger.LogInformation("Successfully created user with id: {id}", user.Id);
+
+        return CreatedAtAction(nameof(Details), new { id = user.Id }, _mapper.Map<UserDto>(user));
     }
 
     [HttpPatch("{id}")]
     [Authorize(Policy = "UserUpdate")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update(int id, [FromBody] JsonPatchDocument<UserUpdateDto> userUpdateDto)
     {
-        if (userUpdateDto is null)
-            return BadRequest();
+        _logger.LogInformation("{methodName} method called.", nameof(Update));
         
-        // Check if user exists in db
+        // Checking if user exists in database
         var dbUser = await _myMasternodeAuthDbContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (dbUser is null)
-            return NotFound();
+        {
+            _logger.LogWarning("No user with id: {id} found.", id);
+            return NotFound($"No user with id: {id} found.");
+        }
 
+        // Mapping database user to new UserUpdateDto
         var userToPatch = _mapper.Map<UserUpdateDto>(dbUser);
         
-        // Apply the patch document to userToPatch
+        // Applying JsonPatchDocument to newly created UserUpdateDto
         userUpdateDto.ApplyTo(userToPatch, ModelState);
 
+        // Validating patched UserUpdateDto
         if (!TryValidateModel(userToPatch))
+        {
+            _logger.LogWarning("Validation failed for patched UserUpdateDto:\n{userUpdateDto}", userToPatch);
             return ValidationProblem(ModelState);
+        }
 
         // Map the userToPatch back to the dbUser entity
         _mapper.Map(userToPatch, dbUser);
 
+        // Save changes to database
         await _myMasternodeAuthDbContext.SaveChangesAsync();
 
-        return Ok();
+        _logger.LogInformation("Successfully updated user with id: {id}", id);
+
+        return NoContent();
     }
 
     [HttpPost("{id}/scopes")]
@@ -160,9 +230,14 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddScopeToUser(int id, [FromBody] ICollection<string> scopes)
     {
+        _logger.LogInformation("{methodName} method called.", nameof(AddScopeToUser));
+
         // Check if request contains any scopes at all
         if (scopes is null || scopes.Count == 0)
-            return BadRequest();
+        {
+            _logger.LogWarning("The request doesn't contain any scopes");
+            return BadRequest("No scopes provided");
+        }
 
         // Check if user exists in db
         var dbUser = await _myMasternodeAuthDbContext.Users
@@ -171,23 +246,32 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (dbUser is null)
+        {
+            _logger.LogWarning("No user with id: {id} found.", id);
             return NotFound("User not found");
+        }
 
-        // Compare requested scopes with scopes available in the db
+        // Comparing requested scopes with scopes available in the db
         var requestedDbScopes = await _myMasternodeAuthDbContext.Scopes
             .AsNoTracking()
             .Where(s => scopes.Contains(s.Name))
             .ToListAsync();
 
-        // Check if requested scopes differe from scopes in db, meaning invalid scopes where requested
+        // Checking if requested scopes differe from scopes in db, meaning invalid scopes where requested
         if (scopes.Count != requestedDbScopes.Count)
+        {
+            _logger.LogWarning("Request contains invalid scopes");
             return BadRequest("Request contains invalid scopes");
+        }   
 
-        // Check if scopes are already assigned
-        if (dbUser.Scopes is not null && !requestedDbScopes.Except(dbUser.Scopes).Any())
+        // Checking if scopes are already assigned
+        if (dbUser.Scopes is not null && !dbUser.Scopes.Intersect(requestedDbScopes).Any())
+        {
+            _logger.LogInformation("User is already assigned to the requested scopes.");
             return Ok();
+        }
 
-        // Add scopes to UsersScopes join table
+        // Adding scopes to UsersScopes join table
         foreach (var requestedScope in requestedDbScopes)
         {
             await _myMasternodeAuthDbContext.UsersScopes.AddAsync(new Database.Models.UserScope() {
@@ -196,7 +280,9 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
             });   
         }
         
+        // Saving dbUser changes to database
         await _myMasternodeAuthDbContext.SaveChangesAsync();
+        _logger.LogInformation("Scopes successfully added to user with id: {id}.", id);
 
         return Ok();
     }
@@ -206,11 +292,16 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RemoveScopeFromUser(int id, [FromBody] List<string> scopes)
+    public async Task<IActionResult> RemoveScopeFromUser(int id, [FromBody] List<string> scopesToRemove)
     {
+        _logger.LogInformation("{methodName} method called.", nameof(RemoveScopeFromUser));
+
         // Check if request contains any scopes at all
-        if (scopes is null || scopes.Count == 0)
-            return BadRequest();
+        if (scopesToRemove is null || scopesToRemove.Count == 0)
+        {
+            _logger.LogWarning("The request doesn't contain any scopes");
+            return BadRequest("No scopes provided");
+        }
 
         // Check if user exists in db
         var dbUser = await _myMasternodeAuthDbContext.Users
@@ -219,41 +310,60 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (dbUser is null)
+        {
+            _logger.LogWarning("No user with id: {id} found.", id);
             return NotFound("User not found");
+        }
 
-        // Check if user has any assigned scopes
-        if (dbUser.Scopes is null || dbUser.Scopes?.Count == 0)
+        // Check if user has any scopes assigned at all
+        if (dbUser.Scopes is null || dbUser.Scopes.Count == 0)
+        {
+            _logger.LogInformation("User doesn't have any scopes assigned.");
             return NoContent();
+        }
         
-        // Compare requested scopes with scopes available in the db
-        var requestedDbScopes = await _myMasternodeAuthDbContext.Scopes
+        // Comparing requested scopes with scopes available in the db
+        var requestedDbScopesToRemove = await _myMasternodeAuthDbContext.Scopes
             .AsNoTracking()
-            .Where(s => scopes.Contains(s.Name))
+            .Where(s => scopesToRemove.Contains(s.Name))
             .ToListAsync();
         
-        // Check if scopes are required to be removed
-        if (!requestedDbScopes.Intersect(dbUser.Scopes!).Any())
-            return NoContent();
-
-        // Remove scopes from UsersScopes join table
-        foreach (var requestedScope in requestedDbScopes)
+        // Check for matching scopes between the user assigned scopes and
+        // the scopes requested for deletion
+        if (!requestedDbScopesToRemove.Intersect(dbUser.Scopes!).Any())
         {
-            // Remove scope from UsersScopes join table
+            _logger.LogInformation("No matching scopes found to remove for user id: {id}.", id);
+            return NoContent();
+        }
+
+
+        foreach (var requestedDbScopeToRemove in requestedDbScopesToRemove)
+        {
             var dbUserScope = await _myMasternodeAuthDbContext.UsersScopes
                 .FirstOrDefaultAsync(us => 
                     us.UserId == dbUser.Id &&
-                    us.ScopeId == requestedScope.Id
+                    us.ScopeId == requestedDbScopeToRemove.Id
                 );
             
             if (dbUserScope is null) {
-                // Log
+                _logger.LogDebug(
+                    "Skipping the removal of ScopeId: {scopeId} from User with Id: {userId} since it doesn't exist.",
+                    requestedDbScopeToRemove.Id, dbUser.Id
+                );
                 continue;
             }
+
+            _logger.LogDebug(
+                "Removing ScopeId: {scopeId} from User with Id: {userId}.",
+                requestedDbScopeToRemove.Id, dbUser.Id
+            );
             
             _myMasternodeAuthDbContext.UsersScopes.Remove(dbUserScope);   
         }
 
+        // Save changes to database
         await _myMasternodeAuthDbContext.SaveChangesAsync();
+        _logger.LogInformation("Scopes successfully removed from user with id: {id}.", id);
 
         return NoContent();
     }
@@ -264,11 +374,23 @@ public class UsersController(ILogger<UsersController> logger, Database.MyMastern
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
+        _logger.LogInformation("{methodName} method called.", nameof(Delete));
+
         var dbUser = await _myMasternodeAuthDbContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
+        // Check if user exists in db
         if (dbUser is null)
-            return NotFound();
+        {
+            _logger.LogInformation("No user with id: {id} found.", id);
+            return NotFound("User not found");
+        }
+
+        // Delete user from the database
+        _myMasternodeAuthDbContext.Users.Remove(dbUser);
+        await _myMasternodeAuthDbContext.SaveChangesAsync();
+
+        _logger.LogInformation("User with id: {id} deleted successfully.", id);
 
         return NoContent();
     }
