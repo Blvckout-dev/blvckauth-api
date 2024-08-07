@@ -21,6 +21,8 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult Login([FromBody] Models.Login login)
     {
+         _logger.LogInformation("{methodName} method called.", nameof(Login));
+
         if (string.IsNullOrWhiteSpace(login.Username) ||
             string.IsNullOrWhiteSpace(login.Password)
         )
@@ -36,10 +38,10 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
             .FirstOrDefault(u => u.Username == login.Username);
 
         if (user is null)
-            return Unauthorized();
-
-        if (string.IsNullOrWhiteSpace(user.Password))
-            return Problem();
+        {
+            _logger.LogWarning("User: {username} doesn't exist", login.Username);
+            return Unauthorized("Authentication failed. Please check your credentials.");
+        }
 
         // Verify password
         PasswordHasher<Database.Models.User> pwh = new(
@@ -47,7 +49,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
                 new PasswordHasherOptions()
                 {
                     CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3, // V3 uses PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
-                    IterationCount = 600000 // Increasing to 600k iterations, recommended by OWASP
+                    IterationCount = 600_000 // Increasing to 600k iterations, recommended by OWASP
                 }
             )
         );
@@ -55,7 +57,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         switch (pwh.VerifyHashedPassword(user, user.Password, login.Password))
         {
             case PasswordVerificationResult.Failed:
-            _logger.LogInformation("User: {username} authentication failed", user.Username);
+            _logger.LogWarning("User: {username} authentication failed", user.Username);
             return Unauthorized("Authentication failed. Please check your credentials.");
             case PasswordVerificationResult.Success:
             _logger.LogInformation("User: {username} authenticated successfully", user.Username);
@@ -72,15 +74,22 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
             user.Scopes?.Select(s => s.Name)
         );
 
-        return !string.IsNullOrWhiteSpace(token) ?
-            Ok(
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            _logger.LogInformation("The login for username: {username} succeeded", login.Username);
+            return Ok(
                 new DataResponse<object>
                 {
                     Success = true,
                     Data = new { Token = token },
                     Message = "Authenticated successfully."
                 }
-            ) :
-            Unauthorized("Token generation failed. Please try again later.");
+            );
+        }
+        else
+        {
+            _logger.LogInformation("The login for username: {username} failed", login.Username);
+            return Unauthorized("Token generation failed. Please try again later.");
+        }
     }
 }
