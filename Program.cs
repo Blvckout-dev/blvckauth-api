@@ -29,7 +29,7 @@ class Program
 
         // Register AutoMapper
         builder.Services.AddAutoMapper(typeof(Program));
-
+        
         builder.Services.AddControllers()
             .AddNewtonsoftJson();
 
@@ -96,7 +96,7 @@ class Program
         // Configuration
         DatabaseSettings? databaseSettings = builder.Configuration.GetSection("Database").Get<DatabaseSettings>();
 
-        // Add mongodb context
+        // Add mysql context
         builder.Services.AddDbContext<MyMasternodeAuthDbContext>(
             options => {
                 options.UseMySql(
@@ -110,8 +110,8 @@ class Program
                         );
                     }
                 );
-                options.EnableDetailedErrors();
-                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors(builder.Environment.IsDevelopment());
+                options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
             }
         );
 
