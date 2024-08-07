@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Bl4ckout.MyMasternode.Auth.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwtTokenService, Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext) : ControllerBase
 {
     private readonly ILogger<AuthController> _logger = logger;
@@ -55,7 +55,8 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         switch (pwh.VerifyHashedPassword(user, user.Password, login.Password))
         {
             case PasswordVerificationResult.Failed:
-            return Unauthorized();
+            _logger.LogInformation("User: {username} authentication failed", user.Username);
+            return Unauthorized("Authentication failed. Please check your credentials.");
             case PasswordVerificationResult.Success:
             _logger.LogInformation("User: {username} authenticated successfully", user.Username);
             break;
@@ -65,12 +66,21 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
             break;
         }
         
-        Models.AuthenticationToken authTokenResult = _jwtTokenService.GenerateToken(
+        string? token = _jwtTokenService.GenerateToken(
             user.Username,
             user.Role?.Name,
             user.Scopes?.Select(s => s.Name)
         );
 
-        return authTokenResult.Success ? Ok(authTokenResult.Token) : Unauthorized(authTokenResult.ErrorMsg);
+        return !string.IsNullOrWhiteSpace(token) ?
+            Ok(
+                new DataResponse<object>
+                {
+                    Success = true,
+                    Data = new { Token = token },
+                    Message = "Authenticated successfully."
+                }
+            ) :
+            Unauthorized("Token generation failed. Please try again later.");
     }
 }

@@ -25,13 +25,13 @@ public class JwtTokenService : Interfaces.IJwtTokenService
         });
     }
 
-    public Models.AuthenticationToken GenerateToken(string? username, string? role, IEnumerable<string?>? scopes = null)
+    public string? GenerateToken(string? username, string? role, IEnumerable<string?>? scopes = null)
     {
-        if (
-            string.IsNullOrWhiteSpace(username) ||
-            string.IsNullOrWhiteSpace(role)
-        )
-            return new Models.AuthenticationToken(false, null, "Invalid input parameters for token generation.");
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(role))
+        {
+            _logger.LogWarning("Username: {username} and/or Role: {role}", username, role);
+            return null;
+        }
         
         // In Program.IsConfigurationValid(), we ensure JwtSettings:Key is valid
         SymmetricSecurityKey secretKey = new(Encoding.UTF8.GetBytes(_jwtSettings.Key!));
@@ -57,8 +57,6 @@ public class JwtTokenService : Interfaces.IJwtTokenService
             signingCredentials: signingCredentials
         );
 
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-
-        return new Models.AuthenticationToken(true, tokenString, null);
+        return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
     }
 }
