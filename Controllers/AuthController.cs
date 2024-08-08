@@ -15,11 +15,11 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
     private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
     private readonly Database.MyMasternodeAuthDbContext _myMasternodeAuthDbContext = myMasternodeAuthDbContext;
 
-    [AllowAnonymous]
     [HttpPost("Login")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public IActionResult Login([FromBody] Models.Login login)
+    public async Task<IActionResult> Login([FromBody] Models.Login login)
     {
          _logger.LogInformation("{methodName} method called.", nameof(Login));
 
@@ -31,11 +31,11 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         _logger.LogInformation("Token requested for user: {username}", login.Username);
 
         // Check if user exists
-        Database.Models.User? user = _myMasternodeAuthDbContext.Users
+        Database.Models.User? user = await _myMasternodeAuthDbContext.Users
             .AsNoTracking()
             .Include(user => user.Role)
             .Include(user => user.Scopes)
-            .FirstOrDefault(u => u.Username == login.Username);
+            .FirstOrDefaultAsync(u => u.Username == login.Username);
 
         if (user is null)
         {
@@ -76,19 +76,12 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
 
         if (!string.IsNullOrWhiteSpace(token))
         {
-            _logger.LogInformation("The login for username: {username} succeeded", login.Username);
-            return Ok(
-                new DataResponse<object>
-                {
-                    Success = true,
-                    Data = new { Token = token },
-                    Message = "Authenticated successfully."
-                }
-            );
+            _logger.LogInformation("The jwt token generation for username: {username} succeeded", login.Username);
+            return Ok(new { Token = token });
         }
         else
         {
-            _logger.LogInformation("The login for username: {username} failed", login.Username);
+            _logger.LogInformation("Token generation for username: {username} failed", login.Username);
             return Unauthorized("Token generation failed. Please try again later.");
         }
     }
