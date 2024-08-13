@@ -109,7 +109,6 @@ public class UsersController(
         Dictionary<string, string> errors = [];
 
         // Check if provided userCreateDto is valid
-
         if (string.IsNullOrWhiteSpace(userCreateDto.Username))
             errors.Add(nameof(userCreateDto.Username), $"{nameof(userCreateDto.Username)} cannot be empty.");
         
@@ -146,11 +145,11 @@ public class UsersController(
         }
 
         // Building new user to insert into the database
-        Database.Models.User user = new () {
+        Database.Models.User dbuser = new () {
             Username = userCreateDto.Username
         };
         
-        user.RoleId = userCreateDto.RoleId ?? user.RoleId;
+        dbuser.RoleId = userCreateDto.RoleId ?? dbuser.RoleId;
 
         // Hash password
         string passwordHash = new PasswordHasher<Database.Models.User>(
@@ -163,27 +162,31 @@ public class UsersController(
                     IterationCount = 600_000
                 }
             )
-        ).HashPassword(user, userCreateDto.Password);
+        ).HashPassword(dbuser, userCreateDto.Password);
 
-        user.Password = passwordHash;
+        dbuser.Password = passwordHash;
 
-        _logger.LogDebugWithObject("New database user:\n{dbUser}", user);
+        _logger.LogDebugWithObject("New database user:\n{dbUser}", dbuser);
 
        // Saving new user to database
-        await _myMasternodeAuthDbContext.Users.AddAsync(user);
+        await _myMasternodeAuthDbContext.Users.AddAsync(dbuser);
         if (await _myMasternodeAuthDbContext.SaveChangesAsync() == 0)
         {
-            _logger.LogWarning("Failed to save user to database:\n{dbUser}", JsonConvert.SerializeObject(user));
+            _logger.LogWarning("Failed to save user to database:\n{dbUser}", JsonConvert.SerializeObject(dbuser));
             return Problem("Internal server error while processing your request.");
         }
 
-        _logger.LogInformation("Successfully created user with id: {id}", user.Id);
+        _logger.LogInformation("Successfully created user with id: {id}", dbuser.Id);
 
-        return CreatedAtAction(nameof(Details), new { id = user.Id }, _mapper.Map<UserDto>(user));
+        return CreatedAtAction(
+            nameof(Details),
+            new { id = dbuser.Id },
+            _mapper.Map<UserDto>(dbuser)
+        );
     }
 
     [HttpPatch("{id}")]
-    [Authorize(Policy = "UserUpdate")]
+    [Authorize(Policy = "UserWrite")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update(int id, [FromBody] JsonPatchDocument<UserUpdateDto> userUpdateDto)
@@ -225,12 +228,12 @@ public class UsersController(
     }
 
     [HttpPost("{id}/scopes")]
-    [Authorize(Policy = "UserUpdate")]
+    [Authorize(Policy = "UserWrite")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddScopeToUser(int id, [FromBody] ICollection<string> scopes)
+    public async Task<IActionResult> AddScopesToUser(int id, [FromBody] ICollection<string> scopes)
     {
-        _logger.LogInformation("{methodName} method called.", nameof(AddScopeToUser));
+        _logger.LogInformation("{methodName} method called.", nameof(AddScopesToUser));
 
         // Check if request contains any scopes at all
         if (scopes is null || scopes.Count == 0)
@@ -288,16 +291,16 @@ public class UsersController(
     }
 
     [HttpDelete("{id}/scopes")]
-    [Authorize(Policy = "UserUpdate")]
+    [Authorize(Policy = "UserWrite")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RemoveScopeFromUser(int id, [FromBody] List<string> scopesToRemove)
+    public async Task<IActionResult> RemoveScopesFromUser(int id, [FromBody] ICollection<int> scopeIds)
     {
-        _logger.LogInformation("{methodName} method called.", nameof(RemoveScopeFromUser));
+        _logger.LogInformation("{methodName} method called.", nameof(RemoveScopesFromUser));
 
         // Check if request contains any scopes at all
-        if (scopesToRemove is null || scopesToRemove.Count == 0)
+        if (scopeIds is null || scopeIds.Count == 0)
         {
             _logger.LogWarning("The request doesn't contain any scopes");
             return BadRequest("No scopes provided");
@@ -321,41 +324,27 @@ public class UsersController(
             _logger.LogInformation("User doesn't have any scopes assigned.");
             return NoContent();
         }
-        
-        // Comparing requested scopes with scopes available in the db
-        var requestedDbScopesToRemove = await _myMasternodeAuthDbContext.Scopes
-            .AsNoTracking()
-            .Where(s => scopesToRemove.Contains(s.Name))
-            .ToListAsync();
-        
-        // Check for matching scopes between the user assigned scopes and
-        // the scopes requested for deletion
-        if (!requestedDbScopesToRemove.Intersect(dbUser.Scopes!).Any())
-        {
-            _logger.LogInformation("No matching scopes found to remove for user id: {id}.", id);
-            return NoContent();
-        }
 
-
-        foreach (var requestedDbScopeToRemove in requestedDbScopesToRemove)
+        foreach (var scopeId in scopeIds)
         {
             var dbUserScope = await _myMasternodeAuthDbContext.UsersScopes
                 .FirstOrDefaultAsync(us => 
                     us.UserId == dbUser.Id &&
-                    us.ScopeId == requestedDbScopeToRemove.Id
+                    us.ScopeId == scopeId
                 );
             
-            if (dbUserScope is null) {
+            if (dbUserScope is null) 
+            {
                 _logger.LogDebug(
                     "Skipping the removal of ScopeId: {scopeId} from User with Id: {userId} since it doesn't exist.",
-                    requestedDbScopeToRemove.Id, dbUser.Id
+                    scopeId, dbUser.Id
                 );
                 continue;
             }
 
             _logger.LogDebug(
                 "Removing ScopeId: {scopeId} from User with Id: {userId}.",
-                requestedDbScopeToRemove.Id, dbUser.Id
+                scopeId, dbUser.Id
             );
             
             _myMasternodeAuthDbContext.UsersScopes.Remove(dbUserScope);   
