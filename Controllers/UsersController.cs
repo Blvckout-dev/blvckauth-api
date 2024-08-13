@@ -26,28 +26,29 @@ public class UsersController(
     [HttpGet]
     [Authorize(Policy = "UserRead")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> List()
+    public async Task<IActionResult> List([FromQuery] bool includeScopeIds = false)
     {
         _logger.LogInformation("{methodName} method called.", nameof(List));
 
         // Get all users with their role and scopes from the database
-        var dbUsers = await _myMasternodeAuthDbContext.Users
-            .AsNoTracking()
-            .Include(users => users.Role)
-            .Include(users => users.Scopes)
-            .ToListAsync();
+        var dbquery = _myMasternodeAuthDbContext.Users
+            .AsNoTracking();
+
+        if (includeScopeIds)
+            dbquery = dbquery.Include(users => users.Scopes);
+
+        var dbUsers = await dbquery.ToListAsync();
 
         _logger.LogDebug("Successfully retrieved {dbUsersCount} users.", dbUsers.Count);
         _logger.LogDebugWithObject("Database users:\n{dbUserList}", dbUsers);
 
         // Mapping database users to a list of user dtos
-        var dtoUsers = dbUsers.Select(dbUser => new UserDto
-        {
-            Id = dbUser.Id,
-            Username = dbUser.Username,
-            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null."),
-            Scopes = dbUser.Scopes?.Select(s => s.Name)
-        });
+        IEnumerable<object> dtoUsers;
+
+        if (includeScopeIds)
+            dtoUsers = _mapper.Map<IEnumerable<UserDto>>(dbUsers);
+        else
+            dtoUsers = _mapper.Map<IEnumerable<UserMinimalDto>>(dbUsers);
         
         _logger.LogDebugWithObject("Mapped users:\n{dtoUserList}", dtoUsers);
 
@@ -81,14 +82,8 @@ public class UsersController(
 
         _logger.LogDebug("Successfully received user from database");
 
-        // Mapping database user to user dto
-        var dtoUser = new UserDto
-        {
-            Id = dbUser.Id,
-            Username = dbUser.Username,
-            Role = dbUser.Role?.Name ?? throw new InvalidOperationException("Role should not be null."),
-            Scopes = dbUser.Scopes?.Select(s => s.Name)
-        };
+        // Mapping database user to user detail dto
+        var dtoUser = _mapper.Map<UserDetailDto>(dbUser);
 
         _logger.LogDebugWithObject("Mapped user:\n{dtoUser}", dtoUser);
 
