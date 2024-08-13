@@ -1,9 +1,10 @@
-using Bl4ckout.MyMasternode.Auth.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Bl4ckout.MyMasternode.Auth.Interfaces;
+using Bl4ckout.MyMasternode.Auth.Utilities;
 
 namespace Bl4ckout.MyMasternode.Auth.Controllers;
 
@@ -14,6 +15,64 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
     private readonly ILogger<AuthController> _logger = logger;
     private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
     private readonly Database.MyMasternodeAuthDbContext _myMasternodeAuthDbContext = myMasternodeAuthDbContext;
+
+    [HttpPost("[action]")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] Models.Login register)
+    {
+         _logger.LogInformation("{methodName} method called.", nameof(Register));
+
+        if (string.IsNullOrWhiteSpace(register.Username) ||
+            string.IsNullOrWhiteSpace(register.Password)
+        )
+            return BadRequest("Username and/or password can not be empty");
+
+        _logger.LogInformation("Registration requested for user: {username}", register.Username);
+
+        // Check if user exists
+        Database.Models.User? user = await _myMasternodeAuthDbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == register.Username.ToLower());
+
+        if (user is not null)
+        {
+            _logger.LogWarning("User: {username} already exist", register.Username);
+            return BadRequest("Registration failed. Username already exists.");
+        }
+
+        user = new() {
+            Username = register.Username
+        };
+
+        // Verify password
+        PasswordHasher<Database.Models.User> pwh = new(
+            Options.Create(
+                new PasswordHasherOptions()
+                {
+                    CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3, // V3 uses PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
+                    IterationCount = 600_000 // Increasing to 600k iterations, recommended by OWASP
+                }
+            )
+        );
+
+        user.Password = pwh.HashPassword(user, register.Password);
+
+        await _myMasternodeAuthDbContext.Users.AddAsync(user);
+        
+        if (await _myMasternodeAuthDbContext.SaveChangesAsync() > 0)
+        {
+            _logger.LogInformation("User: {username} created successfully.", user.Username);
+            return Created();
+        }
+        else
+        {
+            _logger.LogDebugWithObject("User object: {user}", user);
+            _logger.LogWarning("Failed to save user: {username}", user.Username);
+            return Problem("Failed to save user");
+        }
+    }
 
     [HttpPost("Login")]
     [AllowAnonymous]
@@ -26,7 +85,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         if (string.IsNullOrWhiteSpace(login.Username) ||
             string.IsNullOrWhiteSpace(login.Password)
         )
-            return BadRequest();
+            return BadRequest("Username and/or password can not be empty");
 
         _logger.LogInformation("Token requested for user: {username}", login.Username);
 
