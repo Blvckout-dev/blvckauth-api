@@ -231,12 +231,12 @@ public class UsersController(
     [Authorize(Policy = "UserWrite")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddScopesToUser(int id, [FromBody] ICollection<string> scopes)
+    public async Task<IActionResult> AddScopesToUser(int id, [FromBody] ICollection<int> scopeIds)
     {
         _logger.LogInformation("{methodName} method called.", nameof(AddScopesToUser));
 
         // Check if request contains any scopes at all
-        if (scopes is null || scopes.Count == 0)
+        if (scopeIds is null || scopeIds.Count == 0)
         {
             _logger.LogWarning("The request doesn't contain any scopes");
             return BadRequest("No scopes provided");
@@ -257,21 +257,28 @@ public class UsersController(
         // Comparing requested scopes with scopes available in the db
         var requestedDbScopes = await _myMasternodeAuthDbContext.Scopes
             .AsNoTracking()
-            .Where(s => scopes.Contains(s.Name))
+            .Where(s => scopeIds.Contains(s.Id))
             .ToListAsync();
 
         // Checking if requested scopes differe from scopes in db, meaning invalid scopes where requested
-        if (scopes.Count != requestedDbScopes.Count)
+        if (scopeIds.Count != requestedDbScopes.Count)
         {
-            _logger.LogWarning("Request contains invalid scopes");
-            return BadRequest("Request contains invalid scopes");
-        }   
+            var invalidScopeIds = scopeIds.Except(requestedDbScopes.Select(s => s.Id));
+            _logger.LogWarning("The request contained following invalid scopes: {missingScopes}", string.Join(", ", invalidScopeIds));
+            return BadRequest($"The request contained following invalid scopes: {string.Join(", ", invalidScopeIds)}");
+        }
 
         // Checking if scopes are already assigned
-        if (dbUser.Scopes is not null && !dbUser.Scopes.Intersect(requestedDbScopes).Any())
+        if (dbUser.Scopes is not null && dbUser.Scopes.Count > 0)
         {
-            _logger.LogInformation("User is already assigned to the requested scopes.");
-            return Ok();
+            var hsDbUserScopeIds = dbUser.Scopes.Select(s => s.Id).ToHashSet();
+            var hsRequestedScopeIds = requestedDbScopes.Select(s => s.Id).ToHashSet();
+
+            if (hsRequestedScopeIds.IsSubsetOf(hsDbUserScopeIds))
+            {
+                _logger.LogInformation("User with id {id} is already assigned to the requested scopes.", id);
+                return Ok("User already has the requested scopes.");
+            }
         }
 
         // Adding scopes to UsersScopes join table
