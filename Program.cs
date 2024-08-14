@@ -13,6 +13,7 @@ class Program
 {
     private const string SCOPE = "scope";
     private const string ROLE_ADMINISTRATOR = "Administrator";
+
     static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -123,12 +124,15 @@ class Program
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            // Init database
-            using (var scope = app.Services.CreateScope())
+            if (databaseSettings?.SeedData ?? true)
             {
-                var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<MyMasternodeAuthDbContext>();
-                DbInitializer.Initialize(context);
+                // Init database
+                using (var scope = app.Services.CreateScope())
+                {
+                    var services = scope.ServiceProvider;
+                    var context = services.GetRequiredService<MyMasternodeAuthDbContext>();
+                    DbInitializer.Initialize(context);
+                }
             }
 
             app.UseSwagger();
