@@ -122,7 +122,7 @@ public class UsersController(
 
         if (errors.Count > 0)
         {
-            _logger.LogWarning("{errors}", errors); // ToDo: Testing required
+            _logger.LogWarning("{errors}", errors);
             return BadRequest(errors);
         }
 
