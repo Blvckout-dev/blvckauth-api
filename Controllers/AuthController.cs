@@ -16,7 +16,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
     private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
     private readonly Database.MyMasternodeAuthDbContext _myMasternodeAuthDbContext = myMasternodeAuthDbContext;
 
-    [HttpPost("[action]")]
+    [HttpPost("Register")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -141,7 +141,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         else
         {
             _logger.LogInformation("Token generation for username: {username} failed", login.Username);
-            return Unauthorized("Token generation failed. Please try again later.");
+            return Problem("Token generation failed. Please try again later.");
         }
     }
 }
