@@ -1,11 +1,16 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Options;
+using Bl4ckout.MyMasternode.Auth.Settings;
 
 namespace Bl4ckout.MyMasternode.Auth.Database;
 
-public class MyMasternodeAuthDbContext(DbContextOptions<MyMasternodeAuthDbContext> options) : DbContext(options)
+public class MyMasternodeAuthDbContext(
+    DbContextOptions<MyMasternodeAuthDbContext> options,
+    IOptionsMonitor<DatabaseSettings> databaseSettings
+) : DbContext(options)
 {
+    private readonly IOptionsMonitor<DatabaseSettings> _databaseSettings = databaseSettings;
+
     // Suppress null reference warnings, becuase the DbContext base constructor ensures that all DbSet properties will get initialized
     // and null will never be observed on them.
     public DbSet<Models.Role> Roles { get; set; } = null!;
@@ -15,6 +20,22 @@ public class MyMasternodeAuthDbContext(DbContextOptions<MyMasternodeAuthDbContex
     public DbSet<Models.User> Users { get; set; } = null!;
 
     public DbSet<Models.UserScope> UsersScopes { get; set; } = null!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseMySql(
+            _databaseSettings.CurrentValue.ConnectionString,
+            ServerVersion.AutoDetect(_databaseSettings.CurrentValue.ConnectionString),
+            mysqlOptions =>
+            {
+                mysqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 10,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null
+                );
+            }
+        );
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

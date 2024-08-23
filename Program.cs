@@ -1,12 +1,12 @@
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Bl4ckout.MyMasternode.Auth.Interfaces;
 using Bl4ckout.MyMasternode.Auth.Services;
 using Bl4ckout.MyMasternode.Auth.Settings;
 using Bl4ckout.MyMasternode.Auth.Database;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 
 namespace Bl4ckout.MyMasternode.Auth;
 
@@ -129,27 +129,8 @@ class Program
                 .Build()
             );
 
-        // Configuration
-        DatabaseSettings? databaseSettings = builder.Configuration.GetSection(DatabaseSettings.SECTION).Get<DatabaseSettings>();
-
         // Add mysql context
-        builder.Services.AddDbContext<MyMasternodeAuthDbContext>(
-            options => {
-                options.UseMySql(
-                    databaseSettings?.ConnectionString,
-                    ServerVersion.AutoDetect(databaseSettings?.ConnectionString),
-                    mysqlOptions => {
-                        mysqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 10,
-                            maxRetryDelay: TimeSpan.FromSeconds(30),
-                            errorNumbersToAdd: null
-                        );
-                    }
-                );
-                options.EnableDetailedErrors(builder.Environment.IsDevelopment());
-                options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
-            }
-        );
+        builder.Services.AddDbContext<MyMasternodeAuthDbContext>();
 
         // Add services
         builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
@@ -161,6 +142,7 @@ class Program
         {
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<MyMasternodeAuthDbContext>();
+            var databaseSettings = services.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 
             if (app.Environment.IsDevelopment())
                 if (databaseSettings?.SeedData ?? true)
