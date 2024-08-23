@@ -1,5 +1,3 @@
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -76,21 +74,7 @@ class Program
         builder.Services.AddAuthentication(x => {
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(x => {
-            if (builder.Environment.IsDevelopment())
-                x.RequireHttpsMetadata = false;
-                
-            x.TokenValidationParameters = new TokenValidationParameters()
-            {
-                ValidIssuer = "my-masternode-auth",
-                ValidAudience = "my-masternode",
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    // In IsConfigurationValid(), we ensure JwtSettings:Key is valid
-                    Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JwtSettings:Key")!)
-                ),
-                ValidateIssuerSigningKey = true
-            };
-        });
+        }).AddJwtBearer();
 
         builder.Services.AddAuthorizationBuilder()
             .AddPolicy("UserRead", policy => 
@@ -134,10 +118,10 @@ class Program
 
         // Add services
         builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>();
 
         var app = builder.Build();
 
-        
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
