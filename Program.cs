@@ -23,10 +23,23 @@ class Program
         builder.Configuration.AddEnvironmentVariables();
         
         // Check configuration
-        if (!IsConfigurationValid(builder.Configuration))
-            Environment.Exit(1);
+        builder.Services.AddOptions<DatabaseSettings>()
+            .Bind(builder.Configuration.GetSection(DatabaseSettings.SECTION))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+        // Add Jwt configuration to di
+        builder.Services.AddOptions<JwtSettings>()
+            .BindConfiguration(JwtSettings.SECTION)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // Admni Settings
+        builder.Services.AddOptions<AdminSettings>()
+            .BindConfiguration(AdminSettings.SECTION)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true); 
 
         // Register AutoMapper
@@ -117,7 +130,7 @@ class Program
             );
 
         // Configuration
-        DatabaseSettings? databaseSettings = builder.Configuration.GetSection("Database").Get<DatabaseSettings>();
+        DatabaseSettings? databaseSettings = builder.Configuration.GetSection(DatabaseSettings.SECTION).Get<DatabaseSettings>();
 
         // Add mysql context
         builder.Services.AddDbContext<MyMasternodeAuthDbContext>(
@@ -154,7 +167,7 @@ class Program
                     DbInitializer.Initialize(context);
             
             // Check for admin user
-            AddOrUpdateAdminUser(context, builder.Configuration.GetSection("Admin").Get<AdminSettings>());
+            AddOrUpdateAdminUser(context, builder.Configuration.GetSection(AdminSettings.SECTION).Get<AdminSettings>());
         }
 
         // Configure the HTTP request pipeline.
@@ -247,47 +260,5 @@ class Program
             if (adminSettings is not null)
                 adminSettings.Password = null;
         }
-    }
-
-    private static bool IsConfigurationValid(IConfiguration configuration)
-    {
-        using var loggerFactory = LoggerFactory.Create(logging =>
-        {
-            logging.AddConsole();
-            logging.AddDebug();
-        });
-
-        var logger = loggerFactory.CreateLogger<Program>();
-
-        DatabaseSettings? databaseSettings = configuration.GetSection("Database").Get<DatabaseSettings>();
-
-        if (databaseSettings == null)
-        {
-            logger.LogError("[Configuration][Database] Missing");
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(databaseSettings?.ConnectionString))
-        {
-            logger.LogError("[Configuration][Database] Missing ConnectionString");
-            return false;
-        }
-
-        JwtSettings? jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
-        
-        if (jwtSettings == null)
-        {
-            logger.LogError("[Configuration][Jwt] Missing");
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(jwtSettings?.Key))
-        {
-            logger.LogError("[Configuration][Jwt] Missing Key");
-            return false;
-        }
-        
-        logger.LogInformation("Configuration validated successfully");
-        return true;
     }
 }
