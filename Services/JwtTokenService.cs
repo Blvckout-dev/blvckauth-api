@@ -1,4 +1,3 @@
-using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
@@ -7,23 +6,16 @@ using Bl4ckout.MyMasternode.Auth.Settings;
 
 namespace Bl4ckout.MyMasternode.Auth.Services;
 
-public class JwtTokenService : Interfaces.IJwtTokenService
+public class JwtTokenService(
+    ILogger<JwtTokenService> logger,
+    IOptionsMonitor<JwtSettings> jwtSettings
+) : Interfaces.IJwtTokenService
 {
-    private readonly ILogger<JwtTokenService> _logger;
-    private JwtSettings _jwtSettings;
+    private readonly ILogger _logger = logger;
+    private readonly IOptionsMonitor<JwtSettings> _jwtSettings = jwtSettings;
 
     private const string ROLE = "role";
     private const string SCOPE = "scope";
-
-    public JwtTokenService(ILogger<JwtTokenService> logger, IOptionsMonitor<JwtSettings> jwtSettings)
-    {
-        _logger = logger;
-
-        _jwtSettings = jwtSettings.CurrentValue;
-        jwtSettings.OnChange(option => {
-            _jwtSettings = option;
-        });
-    }
 
     public string? GenerateToken(string? username, string? role, IEnumerable<string?>? scopes = null)
     {
@@ -33,8 +25,7 @@ public class JwtTokenService : Interfaces.IJwtTokenService
             return null;
         }
         
-        // In Program.IsConfigurationValid(), we ensure JwtSettings:Key is valid
-        SymmetricSecurityKey secretKey = new(Encoding.UTF8.GetBytes(_jwtSettings.Key!));
+        SymmetricSecurityKey secretKey = new(System.Text.Encoding.UTF8.GetBytes(_jwtSettings.CurrentValue.Key!));
         SigningCredentials signingCredentials = new(secretKey, SecurityAlgorithms.HmacSha256);
         DateTime expirationTimeStamp = DateTime.Now.AddMinutes(20);
 
@@ -50,8 +41,8 @@ public class JwtTokenService : Interfaces.IJwtTokenService
                     claims.Add(new Claim(SCOPE, scope));
 
         var tokenOptions = new JwtSecurityToken(
-            issuer: "my-masternode-auth",
-            audience: "my-masternode",
+            issuer: _jwtSettings.CurrentValue.Issuer,
+            audience: _jwtSettings.CurrentValue.Audience,
             claims: claims,
             expires: expirationTimeStamp,
             signingCredentials: signingCredentials
