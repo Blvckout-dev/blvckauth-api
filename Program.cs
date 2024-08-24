@@ -134,11 +134,12 @@ class Program
                 var databaseSettings = services.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 
                 if (app.Environment.IsDevelopment())
-                    if (databaseSettings?.SeedData ?? true)
+                    if (databaseSettings.SeedData)
                         DbInitializer.Initialize(context);
                 
                 // Check for admin user
-                AddOrUpdateAdminUser(context, builder.Configuration.GetSection(AdminSettings.SECTION).Get<AdminSettings>());
+                var adminSettings = services.GetRequiredService<IOptions<AdminSettings>>().Value;
+                AddOrUpdateAdminUser(app.Logger, context, adminSettings);
             }
 
             // Configure the HTTP request pipeline.
@@ -184,16 +185,8 @@ class Program
         }
     }
 
-    private static void AddOrUpdateAdminUser(MyMasternodeAuthDbContext database, AdminSettings? adminSettings)
+    private static void AddOrUpdateAdminUser(ILogger logger, MyMasternodeAuthDbContext database, AdminSettings adminSettings)
     {
-        using var loggerFactory = LoggerFactory.Create(logging =>
-        {
-            logging.AddConsole();
-            logging.AddDebug();
-        });
-
-        var logger = loggerFactory.CreateLogger<Program>();
-
         try
         {
             if (adminSettings is null || string.IsNullOrWhiteSpace(adminSettings.Username))
@@ -244,15 +237,14 @@ class Program
             }
             
             if (database.SaveChanges() > 0)
-                logger.LogInformation("Admin user has been created/updated");
+                logger.LogInformation("Admin user has been created/updated.");
             else
-                logger.LogWarning("Failed to save new admin user!");
+                logger.LogInformation("Admin user already exists.");
 
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while trying to create/update the admin user.");
-            throw;
         }
         finally
         {
