@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Bl4ckout.MyMasternode.Auth.Database.Entities;
 using Bl4ckout.MyMasternode.Auth.Settings;
 
 namespace Bl4ckout.MyMasternode.Auth.Database;
@@ -13,13 +14,13 @@ public class MyMasternodeAuthDbContext(
 
     // Suppress null reference warnings, becuase the DbContext base constructor ensures that all DbSet properties will get initialized
     // and null will never be observed on them.
-    public DbSet<Models.Role> Roles { get; set; } = null!;
+    public DbSet<Role> Roles { get; set; } = null!;
     
-    public DbSet<Models.Scope> Scopes { get; set; } = null!;
+    public DbSet<Scope> Scopes { get; set; } = null!;
     
-    public DbSet<Models.User> Users { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
-    public DbSet<Models.UserScope> UsersScopes { get; set; } = null!;
+    public DbSet<UserScope> UsersScopes { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -44,8 +45,8 @@ public class MyMasternodeAuthDbContext(
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Models.Role>().ToTable("roles");
-        modelBuilder.Entity<Models.Role>(entity => 
+        modelBuilder.Entity<Role>().ToTable("roles");
+        modelBuilder.Entity<Role>(entity => 
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -58,12 +59,12 @@ public class MyMasternodeAuthDbContext(
         });
 
         // Seed default user role
-        modelBuilder.Entity<Models.Role>().HasData(
-            new Models.Role { Id = 1, Name = "User" }
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = 1, Name = "User" }
         );
 
-        modelBuilder.Entity<Models.Scope>().ToTable("scopes");
-        modelBuilder.Entity<Models.Scope>(entity => 
+        modelBuilder.Entity<Scope>().ToTable("scopes");
+        modelBuilder.Entity<Scope>(entity => 
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -75,8 +76,8 @@ public class MyMasternodeAuthDbContext(
                   .WithMany(u => u.Scopes);
         });
 
-        modelBuilder.Entity<Models.User>().ToTable("users");
-        modelBuilder.Entity<Models.User>(entity => 
+        modelBuilder.Entity<User>().ToTable("users");
+        modelBuilder.Entity<User>(entity => 
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -94,11 +95,11 @@ public class MyMasternodeAuthDbContext(
             
             entity.HasMany(e => e.Scopes)
                   .WithMany(e => e.Users)
-                  .UsingEntity<Models.UserScope>();
+                  .UsingEntity<UserScope>();
         });
 
-        modelBuilder.Entity<Models.UserScope>().ToTable("users_scopes");
-        modelBuilder.Entity<Models.UserScope>(entity => 
+        modelBuilder.Entity<UserScope>().ToTable("users_scopes");
+        modelBuilder.Entity<UserScope>(entity => 
         {
             entity.HasKey(us => new { us.UserId, us.ScopeId });
             

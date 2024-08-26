@@ -1,7 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-
-namespace Bl4ckout.MyMasternode.Auth.Database.Models;
+namespace Bl4ckout.MyMasternode.Auth.Database.Entities;
 
 public class User
 {

@@ -1,4 +1,4 @@
-namespace Bl4ckout.MyMasternode.Auth.Database.Models;
+namespace Bl4ckout.MyMasternode.Auth.Database.Entities;
 
 public class UserScope
 {

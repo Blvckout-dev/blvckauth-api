@@ -32,7 +32,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         _logger.LogInformation("Registration requested for user: {username}", register.Username);
 
         // Check if user exists
-        Database.Models.User? user = await _myMasternodeAuthDbContext.Users
+        Database.Entities.User? user = await _myMasternodeAuthDbContext.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Username.ToLower() == register.Username.ToLower());
 
@@ -47,7 +47,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         };
 
         // Verify password
-        PasswordHasher<Database.Models.User> pwh = new(
+        PasswordHasher<Database.Entities.User> pwh = new(
             Options.Create(
                 new PasswordHasherOptions()
                 {
@@ -90,7 +90,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         _logger.LogInformation("Token requested for user: {username}", login.Username);
 
         // Check if user exists
-        Database.Models.User? user = await _myMasternodeAuthDbContext.Users
+        Database.Entities.User? user = await _myMasternodeAuthDbContext.Users
             .AsNoTracking()
             .Include(user => user.Role)
             .Include(user => user.Scopes)
@@ -103,7 +103,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         }
 
         // Verify password
-        PasswordHasher<Database.Models.User> pwh = new(
+        PasswordHasher<Database.Entities.User> pwh = new(
             Options.Create(
                 new PasswordHasherOptions()
                 {

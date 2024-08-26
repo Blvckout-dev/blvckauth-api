@@ -202,7 +202,7 @@ class Program
             }
 
             // Check if the admin user exists, otherwise create it
-            Database.Models.User? user = database.Users
+            Database.Entities.User? user = database.Users
                 .FirstOrDefault(u => u.Username == adminSettings.Username);
 
             if (user is null)
@@ -217,7 +217,7 @@ class Program
             }
 
             // Prepare password hasher
-            var pwh = new Microsoft.AspNetCore.Identity.PasswordHasher<Database.Models.User>(
+            var pwh = new Microsoft.AspNetCore.Identity.PasswordHasher<Database.Entities.User>(
                 Microsoft.Extensions.Options.Options.Create(
                     new Microsoft.AspNetCore.Identity.PasswordHasherOptions()
                     {

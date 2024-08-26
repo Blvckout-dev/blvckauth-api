@@ -140,14 +140,14 @@ public class UsersController(
         }
 
         // Building new user to insert into the database
-        Database.Models.User dbuser = new () {
+        Database.Entities.User dbuser = new () {
             Username = userCreateDto.Username
         };
         
         dbuser.RoleId = userCreateDto.RoleId ?? dbuser.RoleId;
 
         // Hash password
-        string passwordHash = new PasswordHasher<Database.Models.User>(
+        string passwordHash = new PasswordHasher<Database.Entities.User>(
             Options.Create(
                 new PasswordHasherOptions()
                 {
@@ -279,7 +279,7 @@ public class UsersController(
         // Adding scopes to UsersScopes join table
         foreach (var requestedScope in requestedDbScopes)
         {
-            await _myMasternodeAuthDbContext.UsersScopes.AddAsync(new Database.Models.UserScope() {
+            await _myMasternodeAuthDbContext.UsersScopes.AddAsync(new Database.Entities.UserScope() {
                 UserId = dbUser.Id,
                 ScopeId = requestedScope.Id
             });   

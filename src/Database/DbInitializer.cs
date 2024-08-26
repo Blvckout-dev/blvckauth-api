@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bl4ckout.MyMasternode.Auth.Database;
@@ -34,7 +32,7 @@ public static class DbInitializer
             ]
         );
 
-        PasswordHasher<Models.User> pwh = new(
+        PasswordHasher<Entities.User> pwh = new(
             Microsoft.Extensions.Options.Options.Create(
                 new PasswordHasherOptions()
                 {

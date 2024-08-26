@@ -6,7 +6,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Database.Models.User, DataModels.Auth.V1.DTOs.Users.UserDto>()
+        CreateMap<Database.Entities.User, DataModels.Auth.V1.DTOs.Users.UserDto>()
             .ForMember(
                 dest => dest.ScopeIds,
                 opt => opt.MapFrom(
@@ -16,13 +16,13 @@ public class MappingProfile : Profile
                 )
             )
             .ReverseMap();
-        CreateMap<Database.Models.User, DataModels.Auth.V1.DTOs.Users.UserMinimalDto>().ReverseMap();
-        CreateMap<Database.Models.User, DataModels.Auth.V1.DTOs.Users.UserDetailDto>().ReverseMap();
-        CreateMap<Database.Models.User, DataModels.Auth.V1.DTOs.Users.UserCreateDto>().ReverseMap();
-        CreateMap<Database.Models.User, DataModels.Auth.V1.DTOs.Users.UserUpdateDto>().ReverseMap();
+        CreateMap<Database.Entities.User, DataModels.Auth.V1.DTOs.Users.UserMinimalDto>().ReverseMap();
+        CreateMap<Database.Entities.User, DataModels.Auth.V1.DTOs.Users.UserDetailDto>().ReverseMap();
+        CreateMap<Database.Entities.User, DataModels.Auth.V1.DTOs.Users.UserCreateDto>().ReverseMap();
+        CreateMap<Database.Entities.User, DataModels.Auth.V1.DTOs.Users.UserUpdateDto>().ReverseMap();
 
-        CreateMap<Database.Models.Role, DataModels.Auth.V1.DTOs.Roles.RoleDto>().ReverseMap();
+        CreateMap<Database.Entities.Role, DataModels.Auth.V1.DTOs.Roles.RoleDto>().ReverseMap();
 
-        CreateMap<Database.Models.Scope, DataModels.Auth.V1.DTOs.Scopes.ScopeDto>().ReverseMap();
+        CreateMap<Database.Entities.Scope, DataModels.Auth.V1.DTOs.Scopes.ScopeDto>().ReverseMap();
     }
 }
