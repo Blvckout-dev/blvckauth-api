@@ -15,6 +15,12 @@ appsettings.json
 # dotenv files
 .env
 
+# User-specific files (vscode)
+.vscode/
+# Except project specific files
+!.vscode/launch.json
+!.vscode/tasks.json
+
 # User-specific files
 *.rsuser
 *.suo
