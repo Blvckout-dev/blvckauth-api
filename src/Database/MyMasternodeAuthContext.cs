@@ -23,18 +23,21 @@ public class MyMasternodeAuthDbContext(
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseMySql(
-            _databaseSettings.CurrentValue.ConnectionString,
-            ServerVersion.AutoDetect(_databaseSettings.CurrentValue.ConnectionString),
-            mysqlOptions =>
-            {
-                mysqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 10,
-                    maxRetryDelay: TimeSpan.FromSeconds(30),
-                    errorNumbersToAdd: null
-                );
-            }
-        );
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseMySql(
+                _databaseSettings.CurrentValue.ConnectionString,
+                ServerVersion.AutoDetect(_databaseSettings.CurrentValue.ConnectionString),
+                mysqlOptions =>
+                {
+                    mysqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 10,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null
+                    );
+                }
+            );
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

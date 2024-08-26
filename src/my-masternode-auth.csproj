@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\my-masternode-data-models\my-masternode-data-models.csproj" />
+    <ProjectReference Include="..\..\my-masternode-data-models\my-masternode-data-models.csproj" />
   </ItemGroup>
 
 </Project>
