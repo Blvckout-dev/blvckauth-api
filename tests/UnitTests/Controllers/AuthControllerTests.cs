@@ -8,6 +8,7 @@ using Bl4ckout.MyMasternode.Auth.Database;
 using Bl4ckout.MyMasternode.Auth.Database.Entities;
 using Bl4ckout.MyMasternode.Auth.Settings;
 using Bl4ckout.MyMasternode.Auth.Models;
+using Bl4ckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
 
 namespace Bl4ckout.MyMasternode.Auth.Tests.UnitTests.Controllers;
 
@@ -95,6 +96,23 @@ public class AuthControllerTests
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task Register_ShouldReturnProblem_WhenSavingToDbFails()
+    {
+        // Arrange
+        var registerModel = new Login("newuser", "password");
+
+        var failingContext = new SaveFailingDbContext(_dbOptions, Mock.Of<IOptionsMonitor<DatabaseSettings>>());
+        var controller = new AuthController(_mockLogger.Object, _mockJwtTokenService.Object, failingContext);
+
+        // Act
+        var result = await controller.Register(registerModel);
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal((int)System.Net.HttpStatusCode.InternalServerError, ((ObjectResult)result).StatusCode);
     }
 
     [Fact]
