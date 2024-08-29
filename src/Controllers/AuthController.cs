@@ -61,16 +61,18 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
 
         await _myMasternodeAuthDbContext.Users.AddAsync(user);
         
-        if (await _myMasternodeAuthDbContext.SaveChangesAsync() > 0)
+        try
         {
+            await _myMasternodeAuthDbContext.SaveChangesAsync();
+
             _logger.LogInformation("User: {username} created successfully.", user.Username);
             return Created();
         }
-        else
+        catch (Exception ex)
         {
             _logger.LogDebugWithObject("User object: {user}", user);
-            _logger.LogWarning("Failed to save user: {username}", user.Username);
-            return Problem("Failed to save user");
+            _logger.LogError(ex, "Failed to save user: {username}", user.Username);
+            return Problem("Failed to save user, please try again later on");
         }
     }
 
