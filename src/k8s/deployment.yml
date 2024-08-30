@@ -20,7 +20,7 @@ spec:
               secretKeyRef:
                 name: my-masternode-auth
                 key: DatabaseConnectionString
-          - name: JwtSettings__Key
+          - name: Jwt__Key
             valueFrom:
               secretKeyRef:
                 name: my-masternode-auth
