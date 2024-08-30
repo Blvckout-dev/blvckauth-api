@@ -102,7 +102,7 @@ public class AuthControllerTests
     public async Task Register_ShouldReturnProblem_WhenSavingToDbFails()
     {
         // Arrange
-        var registerModel = new Login("newuser", "password");
+        var registerModel = new Login("newusertofail", "password");
 
         var failingContext = new SaveFailingDbContext(_dbOptions, Mock.Of<IOptionsMonitor<DatabaseSettings>>());
         var controller = new AuthController(_mockLogger.Object, _mockJwtTokenService.Object, failingContext);
