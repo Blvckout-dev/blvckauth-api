@@ -73,7 +73,7 @@ public class AuthControllerTests
     [InlineData("", "")] // Both username and password are empty
     [InlineData("onlyusername", "")] // Empty password
     [InlineData("", "password")] // Empty username
-    public async Task Register_ShouldReturnBadRequest_WhenInvalidInput(string username, string password)
+    public async Task Register_ShouldReturnBadRequest_WhenInvalidInput(string? username, string? password)
     {
         // Arrange
         var registerModel = new Login(username, password);
