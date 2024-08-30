@@ -155,6 +155,8 @@ class Program
 
             app.Run();
         }
+        catch (HostAbortedException)
+        {}
         catch (OptionsValidationException ex)
         {
             using var loggerFactory = LoggerFactory.Create(logging =>
