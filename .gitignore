@@ -3,16 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
-## Custom
-# Http file
-*.http
-!*.template.http
-
-# appsettings.json
-appsettings.json
-##
-
-# dotenv files
+# Sensitive files
+appsettings.*json
+!appsettings.template.json
 .env
 
 # User-specific files (vscode)
@@ -20,6 +13,10 @@ appsettings.json
 # Except project specific files
 !.vscode/launch.json
 !.vscode/tasks.json
+
+# Http file
+*.http
+!*.template.http
 
 # User-specific files
 *.rsuser
