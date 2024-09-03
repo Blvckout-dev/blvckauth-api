@@ -1,0 +1,57 @@
+# .NET build artifacts
+bin/
+obj/
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet packages
+*.nupkg
+*.snupkg
+*.nupkg.metadata
+.nuget/
+packages/
+*.config
+
+# Logs
+*.log
+
+# Local configuration files
+appsettings.Development.json
+appsettings.Production.json
+appsettings*.json
+secrets.json
+*.env
+
+# Temporary files
+tmp/
+*.tmp
+*.swp
+*.swo
+
+# Git and other version control metadata
+.git/
+.gitignore
+.gitattributes
+.hg/
+.hgignore
+.svn/
+CVS/
+
+# Docker and related files
+.dockerignore
+Dockerfile
+
+# IDE and Editor specific files
+.vscode/
+.idea/
+*.iml
+*.suo
+*.sw?
+
+# Other
+*.md
+README.md
+LICENSE
