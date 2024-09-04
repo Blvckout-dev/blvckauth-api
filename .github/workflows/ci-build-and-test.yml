@@ -1,0 +1,29 @@
+name: Application - Build and Test
+
+on:
+  push:
+    branches: [ "main", "feature/*" ]
+  pull_request:
+    branches: [ "main", "feature/*" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up .NET Core SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build project
+      run: dotnet build --configuration Release
+
+    - name: Run tests
+      run: dotnet test --configuration Release
