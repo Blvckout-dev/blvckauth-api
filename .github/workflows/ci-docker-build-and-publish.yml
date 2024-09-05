@@ -2,10 +2,10 @@ name: Docker - Build and Publish
 
 on:
   workflow_run:
-    workflows: ["Application - Build and Test"]
+    workflows:
+      - "Application - Build and Test"
     types:
       - completed
-  push:
     branches:
       - main
   workflow_dispatch:
