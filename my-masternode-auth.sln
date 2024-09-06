@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "my-masternode-auth", "src\my-masternode-auth.csproj", "{C4021834-0BDA-4101-8691-10E9A3E10669}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "my-masternode-data-models", "..\my-masternode-data-models\my-masternode-data-models.csproj", "{307DADCB-13E6-4C16-A64D-EF30A9DD79EF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{55305EDE-B49E-4E7E-BCB4-19F59AC4B6D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\UnitTests\UnitTests.csproj", "{59ABBDEC-DA1D-471B-9F3D-B4163EBCEAE7}"
