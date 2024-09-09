@@ -9,5 +9,5 @@ public class DatabaseSettings
     [Required(AllowEmptyStrings = false)]
     public string? ConnectionString { get; set; }
     
-    public bool SeedData { get; set; } = true;
+    public bool SeedData { get; set; } = false;
 }
