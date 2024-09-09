@@ -2,8 +2,7 @@
 
 ## Description
 
-This is a C# .NET Web API for user authentication and JWT token generation as well as user management.
-It provides endpoints for user registration, login, and user management.
+This C# .NET Web API provides endpoints for user authentication, JWT token generation, and user management, including registration and login.
 The application is deployed using GitHub Actions, Docker Hub, and Kubernetes.
 
 ## Table of Contents
@@ -46,67 +45,89 @@ The application is deployed using GitHub Actions, Docker Hub, and Kubernetes.
 
 ### Clone Repositories
 
-To set up the project locally, you need to clone both the main application repository and the data models repository.
+To set up the project locally.
 
-**Clone main repository**
-```bash
-git clone https://github.com/Bl4ckout-dev/my-masternode-auth.git
-```
+**Clone repository**
 
-**Clone data models repository**
 ```bash
-git clone https://github.com/Bl4ckout-dev/my-masternode-data-models.git
+git clone https://github.com/Blvckout-dev/my-masternode-auth.git
 ```
 
 **Switch working directory**
+
+Navigate to the root directory of the project:
+
 ```bash
 cd my-masternode-auth
 ```
 
 ### Configuration
 
-For local development, you can set environment variables directly, use a `.env` file in combination with Docker, or modify the `appsettings.json`.
+You can configure the application in one of the following ways:
+
+- Set them directly as environment variables.
+- Use a .env file in combination with Docker.
+- For local development, you can use the appsettings.json.
+
+**Change directory**
+
+Navigate to the source directory of the `my-masternode-auth` project:
+
+```bash
+cd src
+```
 
 #### Database
 
 Set up the connection to your MySQL database.
 
 1. Set up MySQL and create a database.
-2. Set the connection string as an environment variable.
+2. Set the connection string:
 
 ```env
 Database__ConnectionString="Server=mysql_server;Database=database;User=user;Password=password;"
 ```
 
-3. Control data seeding in development mode by setting the `SeedData` environment variable:
+3. Control data seeding in development mode by setting the `SeedData` option:
 
 - **Note:** The `SeedData` variable is only applicable in development mode. Data seeding is disabled in production.
-- **Default:** The default value is set to `true`.
+- **Default:** The default value is set to `false`.
 
 ```env
-Database__SeedData=true
+Database__SeedData=false
 ```
 
-
-#### JWT Key
+#### JWT
 
 Responsible for signing and verifying JWT tokens.
 
 1. Generate a strong JWT Key.
-2. Set the JWT Key as an environment variable:
+2. Set the JWT Key:
 
 ```env
 Jwt__Key="strongJwtKey"
 ```
 
+3. Set the JWT Issuer:
+
+```env
+Jwt__Issuer="my-masternode-auth"
+```
+
+4. Set the JWT Audience:
+
+```env
+Jwt__Audience="my-masternode"
+```
+
 #### Admin User
 
-Creates an user who is assigned to the admin role, which grants access to all endpoints.
+Creates a user who is assigned to the Admin role, which grants access to all endpoints.
 
 >**Note:** Providing administrator credentials is optional. However, aside from direct database insertion, this is the only method available for registering an administrator account.
 
 1. Generate a strong password for the Admin User.
-2. Set the Admin username and password as environment variables:
+2. Set the Admin username and password:
    
 ```env
 Admin__Username="admin"
@@ -118,11 +139,42 @@ Admin__Password="strongPass"
 Here’s an example `.env` configuration for local development:
 
 ```env
-Database__ConnectionString="Server=mysql_server;Database=database;User=user;Password=password;"
-Database__SeedData=true
-Jwt__Key="strongJwtKey"
-Admin__Username="admin"
-Admin__Password="strongPass"
+Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
+Database__SeedData=false
+Jwt__Key=strongJwtKey
+Jwt__Issuer=my-masternode-auth
+Jwt__Audience=my-masternode
+Admin__Username=admin
+Admin__Password=strongPass
+
+ASPNETCORE_ENVIRONMENT=Development
+LOGGING__LOGLEVEL__DEFAULT=Debug
+```
+As well as an example `appsettings.json` for local development:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Database": {
+    "ConnectionString": "Server=mysql_server;Database=database;User=user;Password=password;",
+    "SeedData": false
+  },
+  "Jwt": {
+    "Key": "strongJwtKey",
+    "Issuer": "my-masternode-auth",
+    "Audience": "my-masternode"
+  },
+  "Admin": {
+    "Username": "admin",
+    "Password": "strongPass"
+  }
+}
 ```
 
 ### Apply Migrations
@@ -131,19 +183,30 @@ Migrations ensure that your database schema is in sync with your application's d
 
 >**Note:** Ensure that your database server is running and accessible before applying migrations.
 
-**Check for `dotnet-ef`**:
+**Check for `dotnet-ef`**
+
 ```bash
 dotnet ef --version
 ```
 
 **Install `dotnet-ef` tool**
+
 ```bash
 dotnet tool install --global dotnet-ef
 ```
 
 **Run the migrations**
+
 ```bash
-dotnet ef database update --project src/my-masternode-auth.csproj
+dotnet ef database update
+```
+
+**Change directory**
+
+Navigate back to the root directory of the `my-masternode-auth` project:
+
+```bash
+cd ..
 ```
 
 ### Build and Run Locally
@@ -151,37 +214,60 @@ dotnet ef database update --project src/my-masternode-auth.csproj
 To set up the application locally, follow these steps:
 
 **Restore Dependencies**
+
 ```bash
 dotnet restore
 ```
 
 **Build the Application**
+
 ```bash
 dotnet build
 ```
 
 **Run Unit Tests**
+
 ```bash
 dotnet test
 ```
 
 **Run the Application**
 ```bash
-dotnet run
+dotnet run --project src/my-masternode-auth.csproj
 ```
 
 ### Docker Setup
 
 To containerize and run the application using Docker, follow these steps:
 
-**Build Docker Image**
+**Change directory**
+
+Navigate into the source directory of `my-masternode-auth` project, where the Dockerfile is located:
+
 ```bash
-docker build -t yourusername/my-masternode-auth:latest .
+cd src
+```
+
+**Build Docker Image**
+
+```bash
+docker build -t <yourusername>/my-masternode-auth:latest .
 ```
 
 **Run Docker Container**
+
+The following docker run command expects a local `.env` file with the application configuration:
+
 ```bash
-docker run -p 5001:8080 --env-file .env yourusername/my-masternode-auth:latest
+docker run -d -p 5001:8080 --env-file .env --name <containerName> <yourusername>/my-masternode-auth:latest
+```
+
+**Change directory**
+
+Navigate back to the root directory of the `my-masternode-auth` project:
+
+```bash
+cd ..
 ```
 
 ## Usage
@@ -192,16 +278,18 @@ Once the application is running, you can access it at `http://localhost:5001`.
 
 ### Interacting with the API
 
-#### Using `curl`:
+#### Using `curl`
 
 To test the register and login functionality, you can use the following `curl` commands:
 
 **Register new user**
+
 ```bash
 curl -v -X POST http://localhost:5001/api/auth/register -H "Content-Type: application/json" -d '{"username":"user", "password":"pass"}'
 ```
 
 **Login as newly created user**
+
 ```bash
 curl -v -X POST http://localhost:5001/api/auth/login -H "Content-Type: application/json" -d '{"username":"user", "password":"pass"}'
 ```
@@ -480,9 +568,9 @@ curl -v -X POST http://localhost:5001/api/auth/login -H "Content-Type: applicati
 #### Continuous Integration (CI)
 
 - **Tool:** GitHub Actions
-- **Trigger:** Every push to the repository's **release** branch.
+- **Trigger:** Every push to the repository's **main** branch.
 - **Process:**
-  - Builds the application.
+  - Builds and tests the application.
   - Packages the application as a Docker image.
   - Pushes the Docker image to **Docker Hub**.
 
@@ -500,42 +588,74 @@ curl -v -X POST http://localhost:5001/api/auth/login -H "Content-Type: applicati
 
 #### Configuration
 
-- Ensure that the Docker image references in the `k8s/deployment.yaml` file match the images pushed to Docker Hub.
+- Ensure that the Docker image references in the `src/k8s/deployment.yml` file match the images pushed to Docker Hub.
 - Update any environment variables or secrets as required in the manifests.
 
-#### Secrets Configuration
+#### Secrets
 
 Use Kubernetes Secrets for sensitive data like connection strings and JWT keys:
 
-**Connection String**
+**Change directory**
+
+Navigate into the k8s directory of `my-masternode-auth` project:
+
 ```bash
-kubectl create secret generic my-masternode-auth --from-literal=DatabaseConnectionString="Server=myser..."
+cd src/k8s
 ```
 
-**Jwt Key**
+**Create `.env.secrets`**
+
+Here’s an example `.env.secrets` configuration for local development:
+
+```env
+Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
+Jwt__Key=strongJwtKey
+Jwt__Audience=my-masternode
+Jwt__Issuer=my-masternode-auth
+Admin__Username=admin
+Admin__Password=strongPass
+```
+
+**Create secret**
+
 ```bash
-kubectl create secret generic my-masternode-auth --from-literal=JwtKey="strongKey"
+kubectl create secret generic my-masternode-auth --from-env-file=.env.secrets
 ```
 
 #### Apply Kubernetes Manifests
 
+**Apply service**
+
 ```bash
-kubectl apply -f k8s/deployment.yaml
+kubectl apply -f service.yml
 ```
+
+**Apply deployment**
+
 ```bash
-kubectl apply -f k8s/service.yaml
+kubectl apply -f deployment.yml
 ```
 
 #### Verify Deployment
 
-Check the status of deployments:
+**Check deployments status**
+
 ```bash
 kubectl get deployments
 ```
 
-Check the status of services:
+**Check services status**
+
 ```bash
 kubectl get services
+```
+
+**Change directory**
+
+Navigate back to the root directory of the `my-masternode-auth` project:
+
+```bash
+cd ../..
 ```
 
 ## License
@@ -547,4 +667,4 @@ All rights are reserved. You may not copy, distribute, or modify this code or an
 ## Contact
 
 - Maintainer: Maximilian Bauer
-- GitHub: Bl4ckout-dev
+- GitHub: Blvckout-dev
