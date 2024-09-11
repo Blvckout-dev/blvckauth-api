@@ -1,6 +1,6 @@
 using AutoMapper;
 
-namespace Bl4ckout.MyMasternode.Auth.AutoMapper;
+namespace Blvckout.MyMasternode.Auth.AutoMapper;
 
 public class MappingProfile : Profile
 {

@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Bl4ckout.MyMasternode.Auth.Interfaces;
-using Bl4ckout.MyMasternode.Auth.Utilities;
+using Blvckout.MyMasternode.Auth.Interfaces;
+using Blvckout.MyMasternode.Auth.Utilities;
 
-namespace Bl4ckout.MyMasternode.Auth.Controllers;
+namespace Blvckout.MyMasternode.Auth.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

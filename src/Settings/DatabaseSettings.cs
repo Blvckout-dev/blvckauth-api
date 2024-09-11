@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Bl4ckout.MyMasternode.Auth.Settings;
+namespace Blvckout.MyMasternode.Auth.Settings;
 
 public class DatabaseSettings
 {

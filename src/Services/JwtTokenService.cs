@@ -2,9 +2,9 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
-using Bl4ckout.MyMasternode.Auth.Settings;
+using Blvckout.MyMasternode.Auth.Settings;
 
-namespace Bl4ckout.MyMasternode.Auth.Services;
+namespace Blvckout.MyMasternode.Auth.Services;
 
 public class JwtTokenService(
     ILogger<JwtTokenService> logger,

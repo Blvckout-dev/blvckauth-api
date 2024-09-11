@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Bl4ckout.MyMasternode.Auth.Database;
-using Bl4ckout.MyMasternode.Auth.Settings;
+using Blvckout.MyMasternode.Auth.Database;
+using Blvckout.MyMasternode.Auth.Settings;
 
-namespace Bl4ckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
+namespace Blvckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
 
 public class SaveFailingDbContext(
     DbContextOptions<MyMasternodeAuthDbContext> options,

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Bl4ckout.MyMasternode.Auth.Database.Migrations
+namespace Blvckout.MyMasternode.Auth.Database.Migrations
 {
     /// <inheritdoc />
     public partial class SeededDefaultRole : Migration

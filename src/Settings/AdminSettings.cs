@@ -1,5 +1,5 @@
 
-namespace Bl4ckout.MyMasternode.Auth.Settings;
+namespace Blvckout.MyMasternode.Auth.Settings;
 
 public class AdminSettings
 {

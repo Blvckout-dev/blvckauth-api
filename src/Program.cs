@@ -1,12 +1,12 @@
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Bl4ckout.MyMasternode.Auth.Interfaces;
-using Bl4ckout.MyMasternode.Auth.Services;
-using Bl4ckout.MyMasternode.Auth.Settings;
-using Bl4ckout.MyMasternode.Auth.Database;
+using Blvckout.MyMasternode.Auth.Interfaces;
+using Blvckout.MyMasternode.Auth.Services;
+using Blvckout.MyMasternode.Auth.Settings;
+using Blvckout.MyMasternode.Auth.Database;
 
-namespace Bl4ckout.MyMasternode.Auth;
+namespace Blvckout.MyMasternode.Auth;
 
 class Program
 {

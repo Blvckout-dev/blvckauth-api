@@ -2,15 +2,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Bl4ckout.MyMasternode.Auth.Controllers;
-using Bl4ckout.MyMasternode.Auth.Interfaces;
-using Bl4ckout.MyMasternode.Auth.Database;
-using Bl4ckout.MyMasternode.Auth.Database.Entities;
-using Bl4ckout.MyMasternode.Auth.Settings;
-using Bl4ckout.MyMasternode.Auth.Models;
-using Bl4ckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
+using Blvckout.MyMasternode.Auth.Controllers;
+using Blvckout.MyMasternode.Auth.Interfaces;
+using Blvckout.MyMasternode.Auth.Database;
+using Blvckout.MyMasternode.Auth.Database.Entities;
+using Blvckout.MyMasternode.Auth.Settings;
+using Blvckout.MyMasternode.Auth.Models;
+using Blvckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
 
-namespace Bl4ckout.MyMasternode.Auth.Tests.UnitTests.Controllers;
+namespace Blvckout.MyMasternode.Auth.Tests.UnitTests.Controllers;
 
 public class AuthControllerTests
 {

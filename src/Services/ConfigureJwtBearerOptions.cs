@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Bl4ckout.MyMasternode.Auth.Settings;
+using Blvckout.MyMasternode.Auth.Settings;
 
 public class ConfigureJwtBearerOptions(
     IOptionsMonitor<JwtSettings> jwtOptions

@@ -1,4 +1,4 @@
-namespace Bl4ckout.MyMasternode.Auth.Database.Entities;
+namespace Blvckout.MyMasternode.Auth.Database.Entities;
 
 public class Role
 {

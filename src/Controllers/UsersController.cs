@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Bl4ckout.MyMasternode.Auth.Utilities;
-using Bl4ckout.MyMasternode.DataModels.Auth.V1.DTOs.Users;
+using Blvckout.MyMasternode.Auth.Utilities;
+using Blvckout.MyMasternode.DataModels.Auth.V1.DTOs.Users;
 using AutoMapper;
 using Newtonsoft.Json;
 
-namespace Bl4ckout.MyMasternode.Auth.Controllers;
+namespace Blvckout.MyMasternode.Auth.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

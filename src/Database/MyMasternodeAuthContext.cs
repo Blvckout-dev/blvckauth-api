@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Bl4ckout.MyMasternode.Auth.Database.Entities;
-using Bl4ckout.MyMasternode.Auth.Settings;
+using Blvckout.MyMasternode.Auth.Database.Entities;
+using Blvckout.MyMasternode.Auth.Settings;
 
-namespace Bl4ckout.MyMasternode.Auth.Database;
+namespace Blvckout.MyMasternode.Auth.Database;
 
 public class MyMasternodeAuthDbContext(
     DbContextOptions<MyMasternodeAuthDbContext> options,

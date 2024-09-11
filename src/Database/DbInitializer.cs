@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Bl4ckout.MyMasternode.Auth.Database;
+namespace Blvckout.MyMasternode.Auth.Database;
 
 public static class DbInitializer
 {

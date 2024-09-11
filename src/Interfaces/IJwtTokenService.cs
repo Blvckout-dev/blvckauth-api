@@ -1,4 +1,4 @@
-namespace Bl4ckout.MyMasternode.Auth.Interfaces;
+namespace Blvckout.MyMasternode.Auth.Interfaces;
 
 public interface IJwtTokenService
 {
