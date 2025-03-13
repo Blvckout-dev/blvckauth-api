@@ -117,7 +117,7 @@ Jwt__Issuer="BlvckAuth"
 4. Set the JWT Audience:
 
 ```env
-Jwt__Audience="my-masternode"
+Jwt__Audience="Blvckout"
 ```
 
 #### Admin User
@@ -143,7 +143,7 @@ Database__ConnectionString=Server=mysql_server;Database=database;User=user;Passw
 Database__SeedData=false
 Jwt__Key=strongJwtKey
 Jwt__Issuer=BlvckAuth
-Jwt__Audience=my-masternode
+Jwt__Audience=Blvckout
 Admin__Username=admin
 Admin__Password=strongPass
 
@@ -168,7 +168,7 @@ As well as an example `appsettings.json` for local development:
   "Jwt": {
     "Key": "strongJwtKey",
     "Issuer": "BlvckAuth",
-    "Audience": "my-masternode"
+    "Audience": "Blvckout"
   },
   "Admin": {
     "Username": "admin",
@@ -610,7 +610,7 @@ Here’s an example `.env.secrets` configuration for local development:
 ```env
 Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
 Jwt__Key=strongJwtKey
-Jwt__Audience=my-masternode
+Jwt__Audience=Blvckout
 Jwt__Issuer=BlvckAuth
 Admin__Username=admin
 Admin__Password=strongPass
