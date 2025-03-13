@@ -1,4 +1,4 @@
-namespace Blvckout.MyMasternode.Auth.Database.Entities;
+namespace Blvckout.BlvckAuth.Database.Entities;
 
 public class UserScope
 {

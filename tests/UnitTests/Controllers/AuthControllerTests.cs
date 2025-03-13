@@ -2,33 +2,33 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Blvckout.MyMasternode.Auth.Controllers;
-using Blvckout.MyMasternode.Auth.Interfaces;
-using Blvckout.MyMasternode.Auth.Database;
-using Blvckout.MyMasternode.Auth.Database.Entities;
-using Blvckout.MyMasternode.Auth.Settings;
-using Blvckout.MyMasternode.Auth.Models;
-using Blvckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
+using Blvckout.BlvckAuth.Controllers;
+using Blvckout.BlvckAuth.Interfaces;
+using Blvckout.BlvckAuth.Database;
+using Blvckout.BlvckAuth.Database.Entities;
+using Blvckout.BlvckAuth.Settings;
+using Blvckout.BlvckAuth.Models;
+using Blvckout.BlvckAuth.Tests.UnitTests.DbContext;
 
-namespace Blvckout.MyMasternode.Auth.Tests.UnitTests.Controllers;
+namespace Blvckout.BlvckAuth.Tests.UnitTests.Controllers;
 
 public class AuthControllerTests
 {
-    private readonly DbContextOptions<MyMasternodeAuthDbContext> _dbOptions;
+    private readonly DbContextOptions<BlvckAuthDbContext> _dbOptions;
 
     private readonly AuthController _controller;
-    private readonly MyMasternodeAuthDbContext _context;
+    private readonly BlvckAuthDbContext _context;
     private readonly Mock<IJwtTokenService> _mockJwtTokenService;
     private readonly Mock<ILogger<AuthController>> _mockLogger;
 
     public AuthControllerTests()
     {
         // Setup in-memory database context
-        _dbOptions = new DbContextOptionsBuilder<MyMasternodeAuthDbContext>()
+        _dbOptions = new DbContextOptionsBuilder<BlvckAuthDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDatabase")
             .Options;
 
-        _context = new MyMasternodeAuthDbContext(_dbOptions, Mock.Of<IOptionsMonitor<DatabaseSettings>>());
+        _context = new BlvckAuthDbContext(_dbOptions, Mock.Of<IOptionsMonitor<DatabaseSettings>>());
 
         // Seed initial data
         SeedDatabase();

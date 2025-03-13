@@ -1,4 +1,4 @@
-# my-masternode User Authentication API
+# BlvckAuth - User Authentication API
 
 ## Description
 
@@ -50,7 +50,7 @@ To set up the project locally.
 **Clone repository**
 
 ```bash
-git clone https://github.com/Blvckout-dev/my-masternode-auth.git
+git clone https://github.com/Blvckout-dev/BlvckAuth.git
 ```
 
 **Switch working directory**
@@ -58,7 +58,7 @@ git clone https://github.com/Blvckout-dev/my-masternode-auth.git
 Navigate to the root directory of the project:
 
 ```bash
-cd my-masternode-auth
+cd BlvckAuth
 ```
 
 ### Configuration
@@ -71,7 +71,7 @@ You can configure the application in one of the following ways:
 
 **Change directory**
 
-Navigate to the source directory of the `my-masternode-auth` project:
+Navigate to the source directory of the `BlvckAuth` project:
 
 ```bash
 cd src
@@ -111,7 +111,7 @@ Jwt__Key="strongJwtKey"
 3. Set the JWT Issuer:
 
 ```env
-Jwt__Issuer="my-masternode-auth"
+Jwt__Issuer="BlvckAuth"
 ```
 
 4. Set the JWT Audience:
@@ -142,7 +142,7 @@ Here’s an example `.env` configuration for local development:
 Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
 Database__SeedData=false
 Jwt__Key=strongJwtKey
-Jwt__Issuer=my-masternode-auth
+Jwt__Issuer=BlvckAuth
 Jwt__Audience=my-masternode
 Admin__Username=admin
 Admin__Password=strongPass
@@ -167,7 +167,7 @@ As well as an example `appsettings.json` for local development:
   },
   "Jwt": {
     "Key": "strongJwtKey",
-    "Issuer": "my-masternode-auth",
+    "Issuer": "BlvckAuth",
     "Audience": "my-masternode"
   },
   "Admin": {
@@ -203,7 +203,7 @@ dotnet ef database update
 
 **Change directory**
 
-Navigate back to the root directory of the `my-masternode-auth` project:
+Navigate back to the root directory of the `BlvckAuth` project:
 
 ```bash
 cd ..
@@ -233,7 +233,7 @@ dotnet test
 
 **Run the Application**
 ```bash
-dotnet run --project src/my-masternode-auth.csproj
+dotnet run --project src/BlvckAuth.csproj
 ```
 
 ### Docker Setup
@@ -242,7 +242,7 @@ To containerize and run the application using Docker, follow these steps:
 
 **Change directory**
 
-Navigate into the source directory of `my-masternode-auth` project, where the Dockerfile is located:
+Navigate into the source directory of `BlvckAuth` project, where the Dockerfile is located:
 
 ```bash
 cd src
@@ -251,7 +251,7 @@ cd src
 **Build Docker Image**
 
 ```bash
-docker build -t <yourusername>/my-masternode-auth:latest .
+docker build -t <yourusername>/BlvckAuth:latest .
 ```
 
 **Run Docker Container**
@@ -259,12 +259,12 @@ docker build -t <yourusername>/my-masternode-auth:latest .
 The following docker run command expects a local `.env` file with the application configuration:
 
 ```bash
-docker run -d -p 5001:8080 --env-file .env --name <containerName> <yourusername>/my-masternode-auth:latest
+docker run -d -p 5001:8080 --env-file .env --name <containerName> <yourusername>/BlvckAuth:latest
 ```
 
 **Change directory**
 
-Navigate back to the root directory of the `my-masternode-auth` project:
+Navigate back to the root directory of the `BlvckAuth` project:
 
 ```bash
 cd ..
@@ -597,7 +597,7 @@ Use Kubernetes Secrets for sensitive data like connection strings and JWT keys:
 
 **Change directory**
 
-Navigate into the k8s directory of `my-masternode-auth` project:
+Navigate into the k8s directory of `BlvckAuth` project:
 
 ```bash
 cd src/k8s
@@ -611,7 +611,7 @@ Here’s an example `.env.secrets` configuration for local development:
 Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
 Jwt__Key=strongJwtKey
 Jwt__Audience=my-masternode
-Jwt__Issuer=my-masternode-auth
+Jwt__Issuer=BlvckAuth
 Admin__Username=admin
 Admin__Password=strongPass
 ```
@@ -619,7 +619,7 @@ Admin__Password=strongPass
 **Create secret**
 
 ```bash
-kubectl create secret generic my-masternode-auth --from-env-file=.env.secrets
+kubectl create secret generic BlvckAuth --from-env-file=.env.secrets
 ```
 
 #### Apply Kubernetes Manifests
@@ -652,7 +652,7 @@ kubectl get services
 
 **Change directory**
 
-Navigate back to the root directory of the `my-masternode-auth` project:
+Navigate back to the root directory of the `BlvckAuth` project:
 
 ```bash
 cd ../..

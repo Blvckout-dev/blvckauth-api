@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Blvckout.MyMasternode.Auth.Database;
-using Blvckout.MyMasternode.Auth.Settings;
+using Blvckout.BlvckAuth.Database;
+using Blvckout.BlvckAuth.Settings;
 
-namespace Blvckout.MyMasternode.Auth.Tests.UnitTests.DbContext;
+namespace Blvckout.BlvckAuth.Tests.UnitTests.DbContext;
 
 public class SaveFailingDbContext(
-    DbContextOptions<MyMasternodeAuthDbContext> options,
+    DbContextOptions<BlvckAuthDbContext> options,
     IOptionsMonitor<DatabaseSettings> databaseSettings
-) : MyMasternodeAuthDbContext(options, databaseSettings)
+) : BlvckAuthDbContext(options, databaseSettings)
 {
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
     {

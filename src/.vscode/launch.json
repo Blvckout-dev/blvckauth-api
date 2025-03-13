@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // Wenn Sie Zielframeworks geändert haben, stellen Sie sicher, dass Sie den Programmpfad aktualisieren.
-            "program": "${workspaceFolder}/bin/Debug/net8.0/my-masternode-auth.dll",
+            "program": "${workspaceFolder}/bin/Debug/net8.0/BlvckAuth.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

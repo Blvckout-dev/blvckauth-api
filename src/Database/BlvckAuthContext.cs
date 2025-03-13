@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Blvckout.MyMasternode.Auth.Database.Entities;
-using Blvckout.MyMasternode.Auth.Settings;
+using Blvckout.BlvckAuth.Database.Entities;
+using Blvckout.BlvckAuth.Settings;
 
-namespace Blvckout.MyMasternode.Auth.Database;
+namespace Blvckout.BlvckAuth.Database;
 
-public class MyMasternodeAuthDbContext(
-    DbContextOptions<MyMasternodeAuthDbContext> options,
+public class BlvckAuthDbContext(
+    DbContextOptions<BlvckAuthDbContext> options,
     IOptionsMonitor<DatabaseSettings> databaseSettings
 ) : DbContext(options)
 {

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Blvckout.MyMasternode.Auth.Database;
+namespace Blvckout.BlvckAuth.Database;
 
 public static class DbInitializer
 {
-    public static void Initialize(MyMasternodeAuthDbContext context)
+    public static void Initialize(BlvckAuthDbContext context)
     {
         context.Database.EnsureDeleted();
         context.Database.Migrate();

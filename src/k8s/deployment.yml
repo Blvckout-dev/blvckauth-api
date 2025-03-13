@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-masternode-auth
+  name: BlvckAuth
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-masternode-auth
+      app: BlvckAuth
   template:
     metadata:
       labels:
-        app: my-masternode-auth
+        app: BlvckAuth
     spec:
       containers:
-      - name: my-masternode-auth
-        image: blvckoutdev/my-masternode-auth:latest
+      - name: BlvckAuth
+        image: blvckoutdev/BlvckAuth:latest
         ports:
           - containerPort: 8080
         resources:
@@ -29,32 +29,32 @@ spec:
           - name: "Database__ConnectionString"
             valueFrom:
               secretKeyRef:
-                name: my-masternode-auth
+                name: BlvckAuth
                 key: Database__ConnectionString
           - name: "Database__SeedData"
             value: "false"
           - name: Jwt__Key
             valueFrom:
               secretKeyRef:
-                name: my-masternode-auth
+                name: BlvckAuth
                 key: Jwt__Key
           - name: Jwt__Issuer
             valueFrom:
               secretKeyRef:
-                name: my-masternode-auth
+                name: BlvckAuth
                 key: Jwt__Issuer
           - name: Jwt__Audience
             valueFrom:
               secretKeyRef:
-                name: my-masternode-auth
+                name: BlvckAuth
                 key: Jwt__Audience
           - name: "Admin__Username"
             valueFrom:
               secretKeyRef:
-                name: my-masternode-auth
+                name: BlvckAuth
                 key: Admin__Username
           - name: Admin__Password
             valueFrom:
               secretKeyRef:
-                name: my-masternode-auth
+                name: BlvckAuth
                 key: Admin__Password

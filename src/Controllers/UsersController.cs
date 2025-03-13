@@ -4,23 +4,23 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Blvckout.MyMasternode.Auth.Utilities;
+using Blvckout.BlvckAuth.Utilities;
 using Blvckout.MyMasternode.DataModels.Auth.V1.DTOs.Users;
 using AutoMapper;
 using Newtonsoft.Json;
 
-namespace Blvckout.MyMasternode.Auth.Controllers;
+namespace Blvckout.BlvckAuth.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController(
     ILogger<UsersController> logger,
-    Database.MyMasternodeAuthDbContext myMasternodeAuthDbContext,
+    Database.BlvckAuthDbContext BlvckAuthDbContext,
     IMapper mapper
 ) : ControllerBase
 {
     private readonly ILogger<UsersController> _logger = logger;
-    private readonly Database.MyMasternodeAuthDbContext _myMasternodeAuthDbContext = myMasternodeAuthDbContext;
+    private readonly Database.BlvckAuthDbContext _BlvckAuthDbContext = BlvckAuthDbContext;
     private readonly IMapper _mapper = mapper;
 
     [HttpGet]
@@ -31,7 +31,7 @@ public class UsersController(
         _logger.LogInformation("{methodName} method called.", nameof(List));
 
         // Get all users with their role and scopes from the database
-        var dbquery = _myMasternodeAuthDbContext.Users
+        var dbquery = _BlvckAuthDbContext.Users
             .AsNoTracking();
 
         if (includeScopeIds)
@@ -66,7 +66,7 @@ public class UsersController(
         _logger.LogInformation("{methodName} method called.", nameof(Details));
 
         _logger.LogDebug("Trying to receive user with id: {id}.", id);
-        var dbUser = await _myMasternodeAuthDbContext.Users
+        var dbUser = await _BlvckAuthDbContext.Users
             .AsNoTracking()
             .Include(users => users.Role)
             .Include(users => users.Scopes)
@@ -112,7 +112,7 @@ public class UsersController(
         
         if (
             userCreateDto.RoleId is not null &&
-            _myMasternodeAuthDbContext.Roles
+            _BlvckAuthDbContext.Roles
                 .AsNoTracking()
                 .FirstOrDefault(r => r.Id == userCreateDto.RoleId) is null
         )            
@@ -130,7 +130,7 @@ public class UsersController(
 
         // Check if username already exists
         if (
-            await _myMasternodeAuthDbContext.Users
+            await _BlvckAuthDbContext.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == userCreateDto.Username) is not null
         )
@@ -164,8 +164,8 @@ public class UsersController(
         _logger.LogDebugWithObject("New database user:\n{dbUser}", dbuser);
 
        // Saving new user to database
-        await _myMasternodeAuthDbContext.Users.AddAsync(dbuser);
-        if (await _myMasternodeAuthDbContext.SaveChangesAsync() == 0)
+        await _BlvckAuthDbContext.Users.AddAsync(dbuser);
+        if (await _BlvckAuthDbContext.SaveChangesAsync() == 0)
         {
             _logger.LogWarning("Failed to save user to database:\n{dbUser}", JsonConvert.SerializeObject(dbuser));
             return Problem("Internal server error while processing your request.");
@@ -189,7 +189,7 @@ public class UsersController(
         _logger.LogInformation("{methodName} method called.", nameof(Update));
         
         // Checking if user exists in database
-        var dbUser = await _myMasternodeAuthDbContext.Users
+        var dbUser = await _BlvckAuthDbContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (dbUser is null)
@@ -215,7 +215,7 @@ public class UsersController(
         _mapper.Map(userToPatch, dbUser);
 
         // Save changes to database
-        await _myMasternodeAuthDbContext.SaveChangesAsync();
+        await _BlvckAuthDbContext.SaveChangesAsync();
 
         _logger.LogInformation("Successfully updated user with id: {id}", id);
 
@@ -238,7 +238,7 @@ public class UsersController(
         }
 
         // Check if user exists in db
-        var dbUser = await _myMasternodeAuthDbContext.Users
+        var dbUser = await _BlvckAuthDbContext.Users
             .AsNoTracking()
             .Include(u => u.Scopes)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -250,7 +250,7 @@ public class UsersController(
         }
 
         // Comparing requested scopes with scopes available in the db
-        var requestedDbScopes = await _myMasternodeAuthDbContext.Scopes
+        var requestedDbScopes = await _BlvckAuthDbContext.Scopes
             .AsNoTracking()
             .Where(s => scopeIds.Contains(s.Id))
             .ToListAsync();
@@ -279,14 +279,14 @@ public class UsersController(
         // Adding scopes to UsersScopes join table
         foreach (var requestedScope in requestedDbScopes)
         {
-            await _myMasternodeAuthDbContext.UsersScopes.AddAsync(new Database.Entities.UserScope() {
+            await _BlvckAuthDbContext.UsersScopes.AddAsync(new Database.Entities.UserScope() {
                 UserId = dbUser.Id,
                 ScopeId = requestedScope.Id
             });   
         }
         
         // Saving dbUser changes to database
-        await _myMasternodeAuthDbContext.SaveChangesAsync();
+        await _BlvckAuthDbContext.SaveChangesAsync();
         _logger.LogInformation("Scopes successfully added to user with id: {id}.", id);
 
         return Ok();
@@ -309,7 +309,7 @@ public class UsersController(
         }
 
         // Check if user exists in db
-        var dbUser = await _myMasternodeAuthDbContext.Users
+        var dbUser = await _BlvckAuthDbContext.Users
             .AsNoTracking()
             .Include(u => u.Scopes)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -329,7 +329,7 @@ public class UsersController(
 
         foreach (var scopeId in scopeIds)
         {
-            var dbUserScope = await _myMasternodeAuthDbContext.UsersScopes
+            var dbUserScope = await _BlvckAuthDbContext.UsersScopes
                 .FirstOrDefaultAsync(us => 
                     us.UserId == dbUser.Id &&
                     us.ScopeId == scopeId
@@ -349,11 +349,11 @@ public class UsersController(
                 scopeId, dbUser.Id
             );
             
-            _myMasternodeAuthDbContext.UsersScopes.Remove(dbUserScope);   
+            _BlvckAuthDbContext.UsersScopes.Remove(dbUserScope);   
         }
 
         // Save changes to database
-        await _myMasternodeAuthDbContext.SaveChangesAsync();
+        await _BlvckAuthDbContext.SaveChangesAsync();
         _logger.LogInformation("Scopes successfully removed from user with id: {id}.", id);
 
         return NoContent();
@@ -367,7 +367,7 @@ public class UsersController(
     {
         _logger.LogInformation("{methodName} method called.", nameof(Delete));
 
-        var dbUser = await _myMasternodeAuthDbContext.Users
+        var dbUser = await _BlvckAuthDbContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         // Check if user exists in db
@@ -378,8 +378,8 @@ public class UsersController(
         }
 
         // Delete user from the database
-        _myMasternodeAuthDbContext.Users.Remove(dbUser);
-        await _myMasternodeAuthDbContext.SaveChangesAsync();
+        _BlvckAuthDbContext.Users.Remove(dbUser);
+        await _BlvckAuthDbContext.SaveChangesAsync();
 
         _logger.LogInformation("User with id: {id} deleted successfully.", id);
 

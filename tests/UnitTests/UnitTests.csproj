@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Blvckout.MyMasternode.Auth.Tests.UnitTests</RootNamespace>
+    <RootNamespace>Blvckout.BlvckAuth.Tests.UnitTests</RootNamespace>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\my-masternode-auth.csproj" />
+    <ProjectReference Include="..\..\src\BlvckAuth.csproj" />
   </ItemGroup>
 
 </Project>

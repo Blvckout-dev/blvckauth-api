@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Blvckout.MyMasternode.Auth.Utilities;
+namespace Blvckout.BlvckAuth.Utilities;
 
 public static class LoggingHelper
 {
