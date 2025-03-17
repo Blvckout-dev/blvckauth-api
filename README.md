@@ -50,7 +50,7 @@ To set up the project locally.
 **Clone repository**
 
 ```bash
-git clone https://github.com/Blvckout-dev/BlvckAuth.git
+git clone https://github.com/Blvckout-dev/blvckauth-api.git
 ```
 
 **Switch working directory**
@@ -58,7 +58,7 @@ git clone https://github.com/Blvckout-dev/BlvckAuth.git
 Navigate to the root directory of the project:
 
 ```bash
-cd BlvckAuth
+cd blvckauth-api
 ```
 
 ### Configuration
@@ -71,7 +71,7 @@ You can configure the application in one of the following ways:
 
 **Change directory**
 
-Navigate to the source directory of the `BlvckAuth` project:
+Navigate to the source directory of the `blvckauth-api` project:
 
 ```bash
 cd src
@@ -111,13 +111,13 @@ Jwt__Key="strongJwtKey"
 3. Set the JWT Issuer:
 
 ```env
-Jwt__Issuer="BlvckAuth"
+Jwt__Issuer="blvckauth-api"
 ```
 
 4. Set the JWT Audience:
 
 ```env
-Jwt__Audience="Blvckout"
+Jwt__Audience="blvckout"
 ```
 
 #### Admin User
@@ -142,8 +142,8 @@ Here’s an example `.env` configuration for local development:
 Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
 Database__SeedData=false
 Jwt__Key=strongJwtKey
-Jwt__Issuer=BlvckAuth
-Jwt__Audience=Blvckout
+Jwt__Issuer=blvckauth-api
+Jwt__Audience=blvckout
 Admin__Username=admin
 Admin__Password=strongPass
 
@@ -167,8 +167,8 @@ As well as an example `appsettings.json` for local development:
   },
   "Jwt": {
     "Key": "strongJwtKey",
-    "Issuer": "BlvckAuth",
-    "Audience": "Blvckout"
+    "Issuer": "blvckauth-api",
+    "Audience": "blvckout"
   },
   "Admin": {
     "Username": "admin",
@@ -203,7 +203,7 @@ dotnet ef database update
 
 **Change directory**
 
-Navigate back to the root directory of the `BlvckAuth` project:
+Navigate back to the root directory of the `blvckauth-api` project:
 
 ```bash
 cd ..
@@ -233,7 +233,7 @@ dotnet test
 
 **Run the Application**
 ```bash
-dotnet run --project src/BlvckAuth.csproj
+dotnet run --project src/blvckauth-api.csproj
 ```
 
 ### Docker Setup
@@ -242,7 +242,7 @@ To containerize and run the application using Docker, follow these steps:
 
 **Change directory**
 
-Navigate into the source directory of `BlvckAuth` project, where the Dockerfile is located:
+Navigate into the source directory of `blvckauth-api` project, where the Dockerfile is located:
 
 ```bash
 cd src
@@ -251,7 +251,7 @@ cd src
 **Build Docker Image**
 
 ```bash
-docker build -t <yourusername>/BlvckAuth:latest .
+docker build -t <yourusername>/blvckauth-api:latest .
 ```
 
 **Run Docker Container**
@@ -259,12 +259,12 @@ docker build -t <yourusername>/BlvckAuth:latest .
 The following docker run command expects a local `.env` file with the application configuration:
 
 ```bash
-docker run -d -p 5001:8080 --env-file .env --name <containerName> <yourusername>/BlvckAuth:latest
+docker run -d -p 5001:8080 --env-file .env --name <containerName> <yourusername>/blvckauth-api:latest
 ```
 
 **Change directory**
 
-Navigate back to the root directory of the `BlvckAuth` project:
+Navigate back to the root directory of the `blvckauth-api` project:
 
 ```bash
 cd ..
@@ -597,7 +597,7 @@ Use Kubernetes Secrets for sensitive data like connection strings and JWT keys:
 
 **Change directory**
 
-Navigate into the k8s directory of `BlvckAuth` project:
+Navigate into the k8s directory of `blvckauth-api` project:
 
 ```bash
 cd src/k8s
@@ -610,8 +610,8 @@ Here’s an example `.env.secrets` configuration for local development:
 ```env
 Database__ConnectionString=Server=mysql_server;Database=database;User=user;Password=password;
 Jwt__Key=strongJwtKey
-Jwt__Audience=Blvckout
-Jwt__Issuer=BlvckAuth
+Jwt__Audience=blvckout
+Jwt__Issuer=blvckauth-api
 Admin__Username=admin
 Admin__Password=strongPass
 ```
@@ -619,7 +619,7 @@ Admin__Password=strongPass
 **Create secret**
 
 ```bash
-kubectl create secret generic BlvckAuth --from-env-file=.env.secrets
+kubectl create secret generic blvckauth-api --from-env-file=.env.secrets
 ```
 
 #### Apply Kubernetes Manifests
@@ -652,7 +652,7 @@ kubectl get services
 
 **Change directory**
 
-Navigate back to the root directory of the `BlvckAuth` project:
+Navigate back to the root directory of the `blvckauth-api` project:
 
 ```bash
 cd ../..
