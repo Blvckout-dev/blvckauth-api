@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Blvckout.BlvckAuth.Interfaces;
-using Blvckout.BlvckAuth.Utilities;
+using Blvckout.BlvckAuth.API.Interfaces;
+using Blvckout.BlvckAuth.API.Utilities;
 
-namespace Blvckout.BlvckAuth.Controllers;
+namespace Blvckout.BlvckAuth.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwtTokenService, Database.BlvckAuthDbContext BlvckAuthDbContext) : ControllerBase
+public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwtTokenService, Database.BlvckAuthApiDbContext BlvckAuthApiDbContext) : ControllerBase
 {
     private readonly ILogger<AuthController> _logger = logger;
     private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
-    private readonly Database.BlvckAuthDbContext _BlvckAuthDbContext = BlvckAuthDbContext;
+    private readonly Database.BlvckAuthApiDbContext _BlvckAuthApiDbContext = BlvckAuthApiDbContext;
 
     [HttpPost("Register")]
     [AllowAnonymous]
@@ -32,7 +32,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         _logger.LogInformation("Registration requested for user: {username}", register.Username);
 
         // Check if user exists
-        Database.Entities.User? user = await _BlvckAuthDbContext.Users
+        Database.Entities.User? user = await _BlvckAuthApiDbContext.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Username.ToLower() == register.Username.ToLower());
 
@@ -59,11 +59,11 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
 
         user.Password = pwh.HashPassword(user, register.Password);
 
-        await _BlvckAuthDbContext.Users.AddAsync(user);
+        await _BlvckAuthApiDbContext.Users.AddAsync(user);
         
         try
         {
-            await _BlvckAuthDbContext.SaveChangesAsync();
+            await _BlvckAuthApiDbContext.SaveChangesAsync();
 
             _logger.LogInformation("User: {username} created successfully.", user.Username);
             return Created();
@@ -92,7 +92,7 @@ public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwt
         _logger.LogInformation("Token requested for user: {username}", login.Username);
 
         // Check if user exists
-        Database.Entities.User? user = await _BlvckAuthDbContext.Users
+        Database.Entities.User? user = await _BlvckAuthApiDbContext.Users
             .AsNoTracking()
             .Include(user => user.Role)
             .Include(user => user.Scopes)

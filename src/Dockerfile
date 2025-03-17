@@ -30,4 +30,4 @@ ENV DOTNET_EnableDiagnostics=0
 EXPOSE 8080
 
 # Specify the entry point for the application
-ENTRYPOINT ["dotnet", "BlvckAuth.dll"]
+ENTRYPOINT ["dotnet", "blvckauth-api.dll"]

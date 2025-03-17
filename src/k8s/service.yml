@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: BlvckAuth-service
+  name: blvckauth-api-service
 spec:
   selector:
-    app: BlvckAuth
+    app: blvckauth-api
   ports:
   - port: 80
     targetPort: 8080

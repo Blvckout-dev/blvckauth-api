@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Blvckout.BlvckAuth.Settings;
+namespace Blvckout.BlvckAuth.API.Settings;
 
 public class JwtSettings 
 {

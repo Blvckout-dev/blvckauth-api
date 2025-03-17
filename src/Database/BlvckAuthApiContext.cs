@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Blvckout.BlvckAuth.Database.Entities;
-using Blvckout.BlvckAuth.Settings;
+using Blvckout.BlvckAuth.API.Database.Entities;
+using Blvckout.BlvckAuth.API.Settings;
 
-namespace Blvckout.BlvckAuth.Database;
+namespace Blvckout.BlvckAuth.API.Database;
 
-public class BlvckAuthDbContext(
-    DbContextOptions<BlvckAuthDbContext> options,
+public class BlvckAuthApiDbContext(
+    DbContextOptions<BlvckAuthApiDbContext> options,
     IOptionsMonitor<DatabaseSettings> databaseSettings
 ) : DbContext(options)
 {

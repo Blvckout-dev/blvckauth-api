@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Blvckout.BlvckAuth.Database.Migrations
+namespace Blvckout.BlvckAuth.API.Database.Migrations
 {
     /// <inheritdoc />
     public partial class SeededDefaultRole : Migration

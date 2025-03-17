@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: BlvckAuth
+  name: blvckauth-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: BlvckAuth
+      app: blvckauth-api
   template:
     metadata:
       labels:
-        app: BlvckAuth
+        app: blvckauth-api
     spec:
       containers:
-      - name: BlvckAuth
-        image: blvckoutdev/BlvckAuth:latest
+      - name: blvckauth-api
+        image: blvckoutdev/blvckauth-api:latest
         ports:
           - containerPort: 8080
         resources:
@@ -29,32 +29,32 @@ spec:
           - name: "Database__ConnectionString"
             valueFrom:
               secretKeyRef:
-                name: BlvckAuth
+                name: blvckauth-api
                 key: Database__ConnectionString
           - name: "Database__SeedData"
             value: "false"
           - name: Jwt__Key
             valueFrom:
               secretKeyRef:
-                name: BlvckAuth
+                name: blvckauth-api
                 key: Jwt__Key
           - name: Jwt__Issuer
             valueFrom:
               secretKeyRef:
-                name: BlvckAuth
+                name: blvckauth-api
                 key: Jwt__Issuer
           - name: Jwt__Audience
             valueFrom:
               secretKeyRef:
-                name: BlvckAuth
+                name: blvckauth-api
                 key: Jwt__Audience
           - name: "Admin__Username"
             valueFrom:
               secretKeyRef:
-                name: BlvckAuth
+                name: blvckauth-api
                 key: Admin__Username
           - name: Admin__Password
             valueFrom:
               secretKeyRef:
-                name: BlvckAuth
+                name: blvckauth-api
                 key: Admin__Password

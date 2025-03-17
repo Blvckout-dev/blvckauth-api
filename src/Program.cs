@@ -1,12 +1,12 @@
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Blvckout.BlvckAuth.Interfaces;
-using Blvckout.BlvckAuth.Services;
-using Blvckout.BlvckAuth.Settings;
-using Blvckout.BlvckAuth.Database;
+using Blvckout.BlvckAuth.API.Interfaces;
+using Blvckout.BlvckAuth.API.Services;
+using Blvckout.BlvckAuth.API.Settings;
+using Blvckout.BlvckAuth.API.Database;
 
-namespace Blvckout.BlvckAuth;
+namespace Blvckout.BlvckAuth.API;
 
 class Program
 {
@@ -117,7 +117,7 @@ class Program
             );
 
         // Add mysql context
-        builder.Services.AddDbContext<BlvckAuthDbContext>();
+        builder.Services.AddDbContext<BlvckAuthApiDbContext>();
 
         // Add services
         builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
@@ -130,7 +130,7 @@ class Program
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<BlvckAuthDbContext>();
+                var context = services.GetRequiredService<BlvckAuthApiDbContext>();
                 var databaseSettings = services.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 
                 if (app.Environment.IsDevelopment())
@@ -187,7 +187,7 @@ class Program
         }
     }
 
-    private static void AddOrUpdateAdminUser(ILogger logger, BlvckAuthDbContext database, AdminSettings adminSettings)
+    private static void AddOrUpdateAdminUser(ILogger logger, BlvckAuthApiDbContext database, AdminSettings adminSettings)
     {
         try
         {

@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Blvckout.BlvckAuth.Database;
-using Blvckout.BlvckAuth.Settings;
+using Blvckout.BlvckAuth.API.Database;
+using Blvckout.BlvckAuth.API.Settings;
 
-namespace Blvckout.BlvckAuth.Tests.UnitTests.DbContext;
+namespace Blvckout.BlvckAuth.API.Tests.UnitTests.DbContext;
 
 public class SaveFailingDbContext(
-    DbContextOptions<BlvckAuthDbContext> options,
+    DbContextOptions<BlvckAuthApiDbContext> options,
     IOptionsMonitor<DatabaseSettings> databaseSettings
-) : BlvckAuthDbContext(options, databaseSettings)
+) : BlvckAuthApiDbContext(options, databaseSettings)
 {
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
     {

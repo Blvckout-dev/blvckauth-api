@@ -1,4 +1,4 @@
-namespace Blvckout.BlvckAuth.Database.Entities;
+namespace Blvckout.BlvckAuth.API.Database.Entities;
 
 public class Scope
 {
