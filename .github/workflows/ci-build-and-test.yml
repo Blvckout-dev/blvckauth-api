@@ -2,9 +2,13 @@ name: Application - Build and Test
 
 on:
   push:
-    branches: [ "main", "feature/*" ]
+    branches:
+      - main
+      - feature/*
   pull_request:
-    branches: [ "main", "feature/*" ]
+    branches:
+      - main
+      - feature/*
   workflow_dispatch:
 
 jobs:
