@@ -3,7 +3,6 @@
 ## Description
 
 This C# .NET Web API provides endpoints for user authentication, JWT token generation, and user management, including registration and login.
-The application is deployed using GitHub Actions, Docker Hub, and Kubernetes.
 
 ## Table of Contents
 
@@ -11,9 +10,9 @@ The application is deployed using GitHub Actions, Docker Hub, and Kubernetes.
 2. [Installation](#installation)
 3. [Usage](#usage)
 4. [Endpoints](#endpoints)
-6. [Deployment](#deployment)
-7. [License](#license)
-8. [Contact](#contact)
+5. [Deployment](#deployment)
+6. [License](#license)
+7. [Contact](#contact)
 
 ## Tech Stack
 
@@ -39,8 +38,10 @@ The application is deployed using GitHub Actions, Docker Hub, and Kubernetes.
 
 - .NET 8 SDK
 - MySQL
-- dotnet-ef CLI tool
-- Docker
+- dotnet-ef CLI tool (for Entity Framework migrations)
+
+### Optional Prerequisites
+- Docker (For building an image and running the application in a container)
 - Kubernetes (Minikube or any other K8s environment)
 
 ### Clone Repositories
@@ -63,19 +64,12 @@ cd blvckauth-api
 
 ### Configuration
 
-You can configure the application in one of the following ways:
+You can configure the application in the following ways, depending on the environment:
 
-- Set them directly as environment variables.
-- Use a .env file in combination with Docker.
-- For local development, you can use the appsettings.json.
+- [Native Installation]: In the `src` directory, copy or rename `appsettings.template.json` to `appsettings.json` and set the configuration variables in JSON format.
+- [Docker Installation]: In the `src` directory, create a `.env` file and set the configuration variables in key-value pair format.
 
-**Change directory**
-
-Navigate to the source directory of the `blvckauth-api` project:
-
-```bash
-cd src
-```
+Example configuration files are provided at the end of this section.
 
 #### Database
 
@@ -90,7 +84,7 @@ Database__ConnectionString="Server=mysql_server;Database=database;User=user;Pass
 
 3. Control data seeding in development mode by setting the `SeedData` option:
 
-- **Note:** The `SeedData` variable is only applicable in development mode. Data seeding is disabled in production.
+- **Note:** The `SeedData` variable is only applicable in development mode. Data seeding is unavailable in production.
 - **Default:** The default value is set to `false`.
 
 ```env
@@ -99,7 +93,7 @@ Database__SeedData=false
 
 #### JWT
 
-Responsible for signing and verifying JWT tokens.
+Handles signing and verification of JWT tokens.
 
 1. Generate a strong JWT Key.
 2. Set the JWT Key:
@@ -122,9 +116,9 @@ Jwt__Audience="blvckout"
 
 #### Admin User
 
-Creates a user who is assigned to the Admin role, which grants access to all endpoints.
+The application checks for the presence and credentials of the specified admin user on every startup, automatically creating or updating the account if necessary.
 
->**Note:** Providing administrator credentials is optional. However, aside from direct database insertion, this is the only method available for registering an administrator account.
+>**Note:** Administrator credentials are optional. However, unless you manually insert an admin user into the database, this is the only way to create an admin account.
 
 1. Generate a strong password for the Admin User.
 2. Set the Admin username and password:
@@ -150,6 +144,7 @@ Admin__Password=strongPass
 ASPNETCORE_ENVIRONMENT=Development
 LOGGING__LOGLEVEL__DEFAULT=Debug
 ```
+
 As well as an example `appsettings.json` for local development:
 
 ```json
@@ -198,20 +193,12 @@ dotnet tool install --global dotnet-ef
 **Run the migrations**
 
 ```bash
-dotnet ef database update
+dotnet ef database update --project src/blvckauth-api.csproj
 ```
 
-**Change directory**
+### Build and Run Natively
 
-Navigate back to the root directory of the `blvckauth-api` project:
-
-```bash
-cd ..
-```
-
-### Build and Run Locally
-
-To set up the application locally, follow these steps:
+To set up the application natively, follow these steps:
 
 **Restore Dependencies**
 
@@ -260,14 +247,6 @@ The following docker run command expects a local `.env` file with the applicatio
 
 ```bash
 docker run -d -p 5001:8080 --env-file .env --name <containerName> <yourusername>/blvckauth-api:latest
-```
-
-**Change directory**
-
-Navigate back to the root directory of the `blvckauth-api` project:
-
-```bash
-cd ..
 ```
 
 ## Usage
@@ -588,7 +567,7 @@ curl -v -X POST http://localhost:5001/api/auth/login -H "Content-Type: applicati
 
 #### Configuration
 
-- Ensure that the Docker image references in the `src/k8s/deployment.yml` file match the images pushed to Docker Hub.
+- Ensure the image specified in `src/k8s/deployment.yml` matches the desired image.
 - Update any environment variables or secrets as required in the manifests.
 
 #### Secrets
@@ -648,14 +627,6 @@ kubectl get deployments
 
 ```bash
 kubectl get services
-```
-
-**Change directory**
-
-Navigate back to the root directory of the `blvckauth-api` project:
-
-```bash
-cd ../..
 ```
 
 ## License
