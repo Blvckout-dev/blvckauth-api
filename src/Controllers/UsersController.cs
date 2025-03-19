@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Blvckout.BlvckAuth.API.Utilities;
-using Blvckout.BlvckAuth.DataModels.V1.DTOs.Users;
+using Blvckout.BlvckAuth.DataModels.API.V1.DTOs.Users;
 using AutoMapper;
 using Newtonsoft.Json;
 
