@@ -5,7 +5,7 @@
 namespace Blvckout.BlvckAuth.API.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class SeededDefaultRole : Migration
+    public partial class SeedDefaultRole : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

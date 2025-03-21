@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blvckout.BlvckAuth.API.Database.Migrations
 {
     [DbContext(typeof(BlvckAuthApiDbContext))]
-    [Migration("20240630181149_SeededDefaultRole")]
-    partial class SeededDefaultRole
+    [Migration("20240630181149_SeedDefaultRole")]
+    partial class SeedDefaultRole
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
