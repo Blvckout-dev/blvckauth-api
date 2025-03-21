@@ -13,7 +13,14 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
             migrationBuilder.InsertData(
                 table: "roles",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { 1, "User" });
+                values: new object[] { 1, "User" }
+            );
+
+            migrationBuilder.InsertData(
+                table: "roles",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 2, "Administrator" }
+            );
         }
 
         /// <inheritdoc />
@@ -22,7 +29,14 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
             migrationBuilder.DeleteData(
                 table: "roles",
                 keyColumn: "Id",
-                keyValue: 1);
+                keyValue: 1
+            );
+
+            migrationBuilder.DeleteData(
+                table: "roles",
+                keyColumn: "Id",
+                keyValue: 2
+            );
         }
     }
 }
