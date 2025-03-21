@@ -19,12 +19,12 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Models.Role", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,7 +51,7 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Models.Scope", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.Scope", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,7 +71,7 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
                     b.ToTable("scopes", (string)null);
                 });
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Models.User", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -102,7 +102,7 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.Database.Models.UserScope", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.UserScope", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -117,9 +117,9 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
                     b.ToTable("users_scopes", (string)null);
                 });
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.Database.Models.User", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.User", b =>
                 {
-                    b.HasOne("Blvckout.BlvckAuth.Database.Models.Role", "Role")
+                    b.HasOne("Blvckout.BlvckAuth.API.Database.Entities.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -128,15 +128,15 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Models.UserScope", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.UserScope", b =>
                 {
-                    b.HasOne("Blvckout.BlvckAuth.API.Database.Models.Scope", "Scope")
+                    b.HasOne("Blvckout.BlvckAuth.API.Database.Entities.Scope", "Scope")
                         .WithMany()
                         .HasForeignKey("ScopeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Blvckout.BlvckAuth.API.Database.Models.User", "User")
+                    b.HasOne("Blvckout.BlvckAuth.API.Database.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -147,7 +147,7 @@ namespace Blvckout.BlvckAuth.API.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Models.Role", b =>
+            modelBuilder.Entity("Blvckout.BlvckAuth.API.Database.Entities.Role", b =>
                 {
                     b.Navigation("Users");
                 });
