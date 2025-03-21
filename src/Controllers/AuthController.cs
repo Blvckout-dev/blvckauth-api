@@ -9,7 +9,8 @@ using Blvckout.BlvckAuth.API.Utilities;
 namespace Blvckout.BlvckAuth.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
 public class AuthController(ILogger<AuthController> logger, IJwtTokenService jwtTokenService, Database.AuthContext authContext) : ControllerBase
 {
     private readonly ILogger<AuthController> _logger = logger;

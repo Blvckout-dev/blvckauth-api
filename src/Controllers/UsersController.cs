@@ -12,7 +12,8 @@ using Newtonsoft.Json;
 namespace Blvckout.BlvckAuth.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
 public class UsersController(
     ILogger<UsersController> logger,
     Database.AuthContext authContext,
