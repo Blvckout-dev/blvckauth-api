@@ -15,12 +15,12 @@ namespace Blvckout.BlvckAuth.API.Controllers;
 [Route("api/[controller]")]
 public class UsersController(
     ILogger<UsersController> logger,
-    Database.BlvckAuthApiDbContext blvckAuthApiDbContext,
+    Database.AuthContext authContext,
     IMapper mapper
 ) : ControllerBase
 {
     private readonly ILogger<UsersController> _logger = logger;
-    private readonly Database.BlvckAuthApiDbContext _blvckAuthApiDbContext = blvckAuthApiDbContext;
+    private readonly Database.AuthContext _authContext = authContext;
     private readonly IMapper _mapper = mapper;
 
     [HttpGet]
@@ -31,7 +31,7 @@ public class UsersController(
         _logger.LogInformation("{methodName} method called.", nameof(List));
 
         // Get all users with their role and scopes from the database
-        var dbquery = _blvckAuthApiDbContext.Users
+        var dbquery = _authContext.Users
             .AsNoTracking();
 
         if (includeScopeIds)
@@ -66,7 +66,7 @@ public class UsersController(
         _logger.LogInformation("{methodName} method called.", nameof(Details));
 
         _logger.LogDebug("Trying to receive user with id: {id}.", id);
-        var dbUser = await _blvckAuthApiDbContext.Users
+        var dbUser = await _authContext.Users
             .AsNoTracking()
             .Include(users => users.Role)
             .Include(users => users.Scopes)
@@ -112,7 +112,7 @@ public class UsersController(
         
         if (
             userCreateDto.RoleId is not null &&
-            _blvckAuthApiDbContext.Roles
+            _authContext.Roles
                 .AsNoTracking()
                 .FirstOrDefault(r => r.Id == userCreateDto.RoleId) is null
         )            
@@ -130,7 +130,7 @@ public class UsersController(
 
         // Check if username already exists
         if (
-            await _blvckAuthApiDbContext.Users
+            await _authContext.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == userCreateDto.Username) is not null
         )
@@ -164,8 +164,8 @@ public class UsersController(
         _logger.LogDebugWithObject("New database user:\n{dbUser}", dbuser);
 
        // Saving new user to database
-        await _blvckAuthApiDbContext.Users.AddAsync(dbuser);
-        if (await _blvckAuthApiDbContext.SaveChangesAsync() == 0)
+        await _authContext.Users.AddAsync(dbuser);
+        if (await _authContext.SaveChangesAsync() == 0)
         {
             _logger.LogWarning("Failed to save user to database:\n{dbUser}", JsonConvert.SerializeObject(dbuser));
             return Problem("Internal server error while processing your request.");
@@ -189,7 +189,7 @@ public class UsersController(
         _logger.LogInformation("{methodName} method called.", nameof(Update));
         
         // Checking if user exists in database
-        var dbUser = await _blvckAuthApiDbContext.Users
+        var dbUser = await _authContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (dbUser is null)
@@ -215,7 +215,7 @@ public class UsersController(
         _mapper.Map(userToPatch, dbUser);
 
         // Save changes to database
-        await _blvckAuthApiDbContext.SaveChangesAsync();
+        await _authContext.SaveChangesAsync();
 
         _logger.LogInformation("Successfully updated user with id: {id}", id);
 
@@ -238,7 +238,7 @@ public class UsersController(
         }
 
         // Check if user exists in db
-        var dbUser = await _blvckAuthApiDbContext.Users
+        var dbUser = await _authContext.Users
             .AsNoTracking()
             .Include(u => u.Scopes)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -250,7 +250,7 @@ public class UsersController(
         }
 
         // Comparing requested scopes with scopes available in the db
-        var requestedDbScopes = await _blvckAuthApiDbContext.Scopes
+        var requestedDbScopes = await _authContext.Scopes
             .AsNoTracking()
             .Where(s => scopeIds.Contains(s.Id))
             .ToListAsync();
@@ -279,14 +279,14 @@ public class UsersController(
         // Adding scopes to UsersScopes join table
         foreach (var requestedScope in requestedDbScopes)
         {
-            await _blvckAuthApiDbContext.UsersScopes.AddAsync(new Database.Entities.UserScope() {
+            await _authContext.UsersScopes.AddAsync(new Database.Entities.UserScope() {
                 UserId = dbUser.Id,
                 ScopeId = requestedScope.Id
             });   
         }
         
         // Saving dbUser changes to database
-        await _blvckAuthApiDbContext.SaveChangesAsync();
+        await _authContext.SaveChangesAsync();
         _logger.LogInformation("Scopes successfully added to user with id: {id}.", id);
 
         return Ok();
@@ -309,7 +309,7 @@ public class UsersController(
         }
 
         // Check if user exists in db
-        var dbUser = await _blvckAuthApiDbContext.Users
+        var dbUser = await _authContext.Users
             .AsNoTracking()
             .Include(u => u.Scopes)
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -329,7 +329,7 @@ public class UsersController(
 
         foreach (var scopeId in scopeIds)
         {
-            var dbUserScope = await _blvckAuthApiDbContext.UsersScopes
+            var dbUserScope = await _authContext.UsersScopes
                 .FirstOrDefaultAsync(us => 
                     us.UserId == dbUser.Id &&
                     us.ScopeId == scopeId
@@ -349,11 +349,11 @@ public class UsersController(
                 scopeId, dbUser.Id
             );
             
-            _blvckAuthApiDbContext.UsersScopes.Remove(dbUserScope);   
+            _authContext.UsersScopes.Remove(dbUserScope);   
         }
 
         // Save changes to database
-        await _blvckAuthApiDbContext.SaveChangesAsync();
+        await _authContext.SaveChangesAsync();
         _logger.LogInformation("Scopes successfully removed from user with id: {id}.", id);
 
         return NoContent();
@@ -367,7 +367,7 @@ public class UsersController(
     {
         _logger.LogInformation("{methodName} method called.", nameof(Delete));
 
-        var dbUser = await _blvckAuthApiDbContext.Users
+        var dbUser = await _authContext.Users
             .FirstOrDefaultAsync(u => u.Id == id);
 
         // Check if user exists in db
@@ -378,8 +378,8 @@ public class UsersController(
         }
 
         // Delete user from the database
-        _blvckAuthApiDbContext.Users.Remove(dbUser);
-        await _blvckAuthApiDbContext.SaveChangesAsync();
+        _authContext.Users.Remove(dbUser);
+        await _authContext.SaveChangesAsync();
 
         _logger.LogInformation("User with id: {id} deleted successfully.", id);
 

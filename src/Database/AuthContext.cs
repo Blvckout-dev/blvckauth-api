@@ -5,8 +5,8 @@ using Blvckout.BlvckAuth.API.Settings;
 
 namespace Blvckout.BlvckAuth.API.Database;
 
-public class BlvckAuthApiDbContext(
-    DbContextOptions<BlvckAuthApiDbContext> options,
+public class AuthContext(
+    DbContextOptions<AuthContext> options,
     IOptionsMonitor<DatabaseSettings> databaseSettings
 ) : DbContext(options)
 {

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Blvckout.BlvckAuth.API.Database.Migrations
 {
-    [DbContext(typeof(BlvckAuthApiDbContext))]
+    [DbContext(typeof(AuthContext))]
     [Migration("20240630181149_SeedDefaultRole")]
     partial class SeedDefaultRole
     {

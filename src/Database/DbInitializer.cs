@@ -5,7 +5,7 @@ namespace Blvckout.BlvckAuth.API.Database;
 
 public static class DbInitializer
 {
-    public static void Initialize(BlvckAuthApiDbContext context)
+    public static void Initialize(AuthContext context)
     {
         context.Database.EnsureDeleted();
         context.Database.Migrate();

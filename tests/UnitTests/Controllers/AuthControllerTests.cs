@@ -14,21 +14,21 @@ namespace Blvckout.BlvckAuth.API.Tests.UnitTests.Controllers;
 
 public class AuthControllerTests
 {
-    private readonly DbContextOptions<BlvckAuthApiDbContext> _dbOptions;
+    private readonly DbContextOptions<AuthContext> _dbOptions;
 
     private readonly AuthController _controller;
-    private readonly BlvckAuthApiDbContext _context;
+    private readonly AuthContext _context;
     private readonly Mock<IJwtTokenService> _mockJwtTokenService;
     private readonly Mock<ILogger<AuthController>> _mockLogger;
 
     public AuthControllerTests()
     {
         // Setup in-memory database context
-        _dbOptions = new DbContextOptionsBuilder<BlvckAuthApiDbContext>()
+        _dbOptions = new DbContextOptionsBuilder<AuthContext>()
             .UseInMemoryDatabase(databaseName: "TestDatabase")
             .Options;
 
-        _context = new BlvckAuthApiDbContext(_dbOptions, Mock.Of<IOptionsMonitor<DatabaseSettings>>());
+        _context = new AuthContext(_dbOptions, Mock.Of<IOptionsMonitor<DatabaseSettings>>());
 
         // Seed initial data
         SeedDatabase();

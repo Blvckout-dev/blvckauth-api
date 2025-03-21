@@ -117,7 +117,7 @@ class Program
             );
 
         // Add mysql context
-        builder.Services.AddDbContext<BlvckAuthApiDbContext>();
+        builder.Services.AddDbContext<AuthContext>();
 
         // Add services
         builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
@@ -130,7 +130,7 @@ class Program
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<BlvckAuthApiDbContext>();
+                var context = services.GetRequiredService<AuthContext>();
                 var databaseSettings = services.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 
                 if (app.Environment.IsDevelopment())
@@ -187,7 +187,7 @@ class Program
         }
     }
 
-    private static void AddOrUpdateAdminUser(ILogger logger, BlvckAuthApiDbContext database, AdminSettings adminSettings)
+    private static void AddOrUpdateAdminUser(ILogger logger, AuthContext database, AdminSettings adminSettings)
     {
         try
         {
